@@ -22,12 +22,12 @@ import (
 	"fmt"
 	"strings"
 
-	sednav1 "github.com/adayangolzz/sedna-modified/pkg/apis/sedna/v1alpha1"
+	sednav1 "github.com/dayu-autostreamer/dayu-sedna/pkg/apis/sedna/v1alpha1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog/v2"
 
-	"github.com/adayangolzz/sedna-modified/pkg/globalmanager/runtime"
+	"github.com/dayu-autostreamer/dayu-sedna/pkg/globalmanager/runtime"
 )
 
 type Model = runtime.Model

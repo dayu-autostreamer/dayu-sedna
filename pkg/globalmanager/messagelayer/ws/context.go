@@ -26,7 +26,7 @@ import (
 	"k8s.io/client-go/util/workqueue"
 	"k8s.io/klog/v2"
 
-	"github.com/adayangolzz/sedna-modified/pkg/globalmanager/messagelayer/model"
+	"github.com/dayu-autostreamer/dayu-sedna/pkg/globalmanager/messagelayer/model"
 )
 
 type nodeMessage struct {

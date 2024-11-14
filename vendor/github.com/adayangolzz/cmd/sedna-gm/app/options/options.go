@@ -23,8 +23,8 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	cliflag "k8s.io/component-base/cli/flag"
 
-	"github.com/adayangolzz/sedna-modified/pkg/globalmanager/config"
-	"github.com/adayangolzz/sedna-modified/pkg/util"
+	"github.com/dayu-autostreamer/dayu-sedna/pkg/globalmanager/config"
+	"github.com/dayu-autostreamer/dayu-sedna/pkg/util"
 )
 
 // DefaultConfigDir default current working directory

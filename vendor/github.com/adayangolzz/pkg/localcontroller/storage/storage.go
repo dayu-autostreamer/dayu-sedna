@@ -23,8 +23,8 @@ import (
 	"path"
 	"path/filepath"
 
-	"github.com/adayangolzz/sedna-modified/pkg/globalmanager/runtime"
-	"github.com/adayangolzz/sedna-modified/pkg/localcontroller/util"
+	"github.com/dayu-autostreamer/dayu-sedna/pkg/globalmanager/runtime"
+	"github.com/dayu-autostreamer/dayu-sedna/pkg/localcontroller/util"
 )
 
 const (

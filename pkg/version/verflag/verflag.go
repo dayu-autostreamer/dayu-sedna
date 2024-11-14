@@ -23,7 +23,7 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/adayangolzz/sedna-modified/pkg/version"
+	"github.com/dayu-autostreamer/dayu-sedna/pkg/version"
 
 	flag "github.com/spf13/pflag"
 )

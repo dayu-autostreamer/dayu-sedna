@@ -31,7 +31,7 @@ import (
 	clientset "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 
-	sednaclientset "github.com/adayangolzz/sedna-modified/pkg/client/clientset/versioned"
+	sednaclientset "github.com/dayu-autostreamer/dayu-sedna/pkg/client/clientset/versioned"
 )
 
 // Framework supports common operations used by e2e tests; it will keep a client & a namespace for you.

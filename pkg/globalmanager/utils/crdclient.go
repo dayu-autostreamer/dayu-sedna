@@ -19,7 +19,7 @@ package utils
 import (
 	"k8s.io/klog/v2"
 
-	clientset "github.com/adayangolzz/sedna-modified/pkg/client/clientset/versioned/typed/sedna/v1alpha1"
+	clientset "github.com/dayu-autostreamer/dayu-sedna/pkg/client/clientset/versioned/typed/sedna/v1alpha1"
 )
 
 // NewCRDClient is used to create a restClient for crd

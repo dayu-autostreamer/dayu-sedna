@@ -32,7 +32,7 @@ Then Exporter periodically scans the metrics in the Metric_value table and class
 - Grafana
 - Prometheus
 
-If you don't have an existing Sedna or KubeEdge environment, you can follow the [Sedna Installation Document](https://github.com/adayangolzz/sedna-modified/blob/main/docs/setup/install.md) to install what you need.  
+If you don't have an existing Sedna or KubeEdge environment, you can follow the [Sedna Installation Document](https://github.com/dayu-autostreamer/dayu-sedna/blob/main/docs/setup/install.md) to install what you need.  
 If you don't have an existing Grafana or Prometheus environment, you can follow the [Observation-Management Document](../README.md) to install what you need.
 #### Install KB_exporter
 You should use the following command to compile the kb_exproter:

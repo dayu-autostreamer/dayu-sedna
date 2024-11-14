@@ -1,4 +1,4 @@
-module github.com/adayangolzz/sedna-modified
+module github.com/dayu-autostreamer/dayu-sedna
 
 go 1.17
 

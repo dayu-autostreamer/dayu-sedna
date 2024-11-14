@@ -119,7 +119,7 @@ Updates are categorized below along with the possible actions that the upstream 
 |Lifelong-learning-job Reported State Updated    |  The controller appends the reported status of the job by LC in the cloud. |
 
 ### Details of api between GM(cloud) and LC(edge)
-[Reference](https://github.com/adayangolzz/sedna-modified/blob/main/docs/proposals/incremental-learning.md#details-of-api-between-gmcloud-and-lcedge)
+[Reference](https://github.com/dayu-autostreamer/dayu-sedna/blob/main/docs/proposals/incremental-learning.md#details-of-api-between-gmcloud-and-lcedge)
 
 ### The flows of lifelong learning job
 - Flow of the job creation:

@@ -19,10 +19,10 @@ limitations under the License.
 package v1alpha1
 
 import (
-	// v1alpha1 "github.com/adayangolzz/sedna-modified/pkg/apis/sedna/v1alpha1"
-	// "github.com/adayangolzz/sedna-modified/pkg/client/clientset/versioned/scheme"
-	v1alpha1 "github.com/adayangolzz/sedna-modified/pkg/apis/sedna/v1alpha1"
-	"github.com/adayangolzz/sedna-modified/pkg/client/clientset/versioned/scheme"
+	// v1alpha1 "github.com/dayu-autostreamer/dayu-sedna/pkg/apis/sedna/v1alpha1"
+	// "github.com/dayu-autostreamer/dayu-sedna/pkg/client/clientset/versioned/scheme"
+	v1alpha1 "github.com/dayu-autostreamer/dayu-sedna/pkg/apis/sedna/v1alpha1"
+	"github.com/dayu-autostreamer/dayu-sedna/pkg/client/clientset/versioned/scheme"
 	rest "k8s.io/client-go/rest"
 )
 

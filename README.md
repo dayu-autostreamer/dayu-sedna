@@ -26,7 +26,7 @@ We assume that you have finished the k8s and kubeedge installation
 - git clone
 
   ```sh
-  git clone https://github.com/AdaYangOlzz/sedna-modified.git
+  git clone https://github.com/dayu-autostreamer/dayu-sedna.git
   ```
 
 - install sedna
@@ -41,7 +41,7 @@ We assume that you have finished the k8s and kubeedge installation
   SEDNA_ACTION=create bash install.sh
   ```
 
-- yaml example([sedna-modified/build/crd-samples/sedna/jointmultiedgeservice_v1alpha1.yaml at master · AdaYangOlzz/sedna-modified (github.com)](https://github.com/AdaYangOlzz/sedna-modified/blob/master/build/crd-samples/sedna/jointmultiedgeservice_v1alpha1.yaml))
+- yaml example([sedna-modified/build/crd-samples/sedna/jointmultiedgeservice_v1alpha1.yaml at main · dayu-autostreamer/dayu-sedna (github.com)](https://github.com/dayu-autostreamer/dayu-sedna/blob/main/build/crd-samples/sedna/jointmultiedgeservice_v1alpha1.yaml))
 
   ```sh
   kubectl apply -f <yaml-name>
@@ -57,10 +57,7 @@ We assume that you have finished the k8s and kubeedge installation
   ```
 
 ## How to Build
-build gm/lc image
+build gm/lc/kb image
   ```sh
-  make WHAT=gm
-  make gmiamge
-  make WHAT=lc
-  docker buildx build --platform linux/arm64,linux/amd64 --build-arg GO_LDFLAGS="" -t repo:5000/adayoung/sedna-lc:v0.3.12 -f build/lc/Dockerfile . --push
+  make docker-cross-build
   ```

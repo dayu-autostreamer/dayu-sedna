@@ -25,7 +25,7 @@ import (
 
 	"k8s.io/klog/v2"
 
-	"github.com/adayangolzz/sedna-modified/pkg/localcontroller/util"
+	"github.com/dayu-autostreamer/dayu-sedna/pkg/localcontroller/util"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 )

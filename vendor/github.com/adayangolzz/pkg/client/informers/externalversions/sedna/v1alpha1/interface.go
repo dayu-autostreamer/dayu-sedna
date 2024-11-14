@@ -19,7 +19,7 @@ limitations under the License.
 package v1alpha1
 
 import (
-	internalinterfaces "github.com/adayangolzz/sedna-modified/pkg/client/informers/externalversions/internalinterfaces"
+	internalinterfaces "github.com/dayu-autostreamer/dayu-sedna/pkg/client/informers/externalversions/internalinterfaces"
 )
 
 // Interface provides access to all the informers in this group version.

@@ -23,7 +23,7 @@ from interface import Estimator
 
 def _load_txt_dataset(dataset_url):
     # use original dataset url,
-    # see https://github.com/adayangolzz/sedna-modified/issues/35
+    # see https://github.com/dayu-autostreamer/dayu-sedna/issues/35
     original_dataset_url = Context.get_parameters('original_dataset_url')
     return os.path.join(os.path.dirname(original_dataset_url), dataset_url)
 

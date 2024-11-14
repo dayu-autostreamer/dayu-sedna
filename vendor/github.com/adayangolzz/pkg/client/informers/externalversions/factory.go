@@ -23,9 +23,9 @@ import (
 	sync "sync"
 	time "time"
 
-	versioned "github.com/adayangolzz/sedna-modified/pkg/client/clientset/versioned"
-	internalinterfaces "github.com/adayangolzz/sedna-modified/pkg/client/informers/externalversions/internalinterfaces"
-	sedna "github.com/adayangolzz/sedna-modified/pkg/client/informers/externalversions/sedna"
+	versioned "github.com/dayu-autostreamer/dayu-sedna/pkg/client/clientset/versioned"
+	internalinterfaces "github.com/dayu-autostreamer/dayu-sedna/pkg/client/informers/externalversions/internalinterfaces"
+	sedna "github.com/dayu-autostreamer/dayu-sedna/pkg/client/informers/externalversions/sedna"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"

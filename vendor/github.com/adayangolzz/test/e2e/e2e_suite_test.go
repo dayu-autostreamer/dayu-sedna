@@ -22,10 +22,10 @@ import (
 	"os"
 	"testing"
 
-	"github.com/adayangolzz/sedna-modified/test/e2e/framework"
+	"github.com/dayu-autostreamer/dayu-sedna/test/e2e/framework"
 
 	// test sources
-	_ "github.com/adayangolzz/sedna-modified/test/e2e/apps"
+	_ "github.com/dayu-autostreamer/dayu-sedna/test/e2e/apps"
 )
 
 func TestMain(m *testing.M) {

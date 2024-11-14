@@ -27,8 +27,8 @@ Issues are tracked on GitHub. Please check [the issue tracker][issues] to see
 if there is any existing discussion or work related to your interests.
 
 In particular, if you're just getting started, you may want to look for issues
-labeled <a href="https://github.com/adayangolzz/sedna-modified/labels/good%20first%20issue" class="gh-label" style="background: #7057ff; color: white">good first issue</a> or <a href="https://github.com/adayangolzz/sedna-modified/labels/help%20wanted" class="gh-label" style="background: #006b75; color: white">help wanted</a> which are standard labels in the Kubernetes project.
-The <a href="https://github.com/adayangolzz/sedna-modified/labels/help%20wanted" class="gh-label" style="background: #006b75; color: white">help wanted</a> label marks issues we're actively seeking help with while <a href="https://github.com/adayangolzz/sedna-modified/labels/good%20first%20issue" class="gh-label" style="background: #7057ff; color: white">good first issue</a> is additionally applied to a subset of issues we think will be particularly good for newcomers.
+labeled <a href="https://github.com/dayu-autostreamer/dayu-sedna/labels/good%20first%20issue" class="gh-label" style="background: #7057ff; color: white">good first issue</a> or <a href="https://github.com/dayu-autostreamer/dayu-sedna/labels/help%20wanted" class="gh-label" style="background: #006b75; color: white">help wanted</a> which are standard labels in the Kubernetes project.
+The <a href="https://github.com/dayu-autostreamer/dayu-sedna/labels/help%20wanted" class="gh-label" style="background: #006b75; color: white">help wanted</a> label marks issues we're actively seeking help with while <a href="https://github.com/dayu-autostreamer/dayu-sedna/labels/good%20first%20issue" class="gh-label" style="background: #7057ff; color: white">good first issue</a> is additionally applied to a subset of issues we think will be particularly good for newcomers.
 
 See [Kubernetes help wanted] for best practices.
 
@@ -58,9 +58,9 @@ When done, you can also refer our [recommended Git workflow] and [pull request b
 [development preparation guide]: ./prepare-environment.md
 [add-feature-guide]: control-plane/add-a-new-synergy-feature.md
 
-[issues]: https://github.com/adayangolzz/sedna-modified/issues
-[file-an-issue]: https://github.com/adayangolzz/sedna-modified/issues/new/choose
-[file-a-fr]: https://github.com/adayangolzz/sedna-modified/issues/new?labels=kind%2Ffeature&template=enhancement.md
+[issues]: https://github.com/dayu-autostreamer/dayu-sedna/issues
+[file-an-issue]: https://github.com/dayu-autostreamer/dayu-sedna/issues/new/choose
+[file-a-fr]: https://github.com/dayu-autostreamer/dayu-sedna/issues/new?labels=kind%2Ffeature&template=enhancement.md
 
 [github]: https://github.com/
 [kubernetes documentation style guide]: https://github.com/kubernetes/community/blob/master/contributors/guide/style-guide.md

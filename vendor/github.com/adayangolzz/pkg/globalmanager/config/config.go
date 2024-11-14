@@ -24,7 +24,7 @@ import (
 	"k8s.io/klog/v2"
 	"sigs.k8s.io/yaml"
 
-	"github.com/adayangolzz/sedna-modified/pkg/util"
+	"github.com/dayu-autostreamer/dayu-sedna/pkg/util"
 )
 
 const (

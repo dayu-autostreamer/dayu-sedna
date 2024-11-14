@@ -2,7 +2,7 @@
 
 This document defines a high level roadmap for sedna development.
 
-The [milestones defined in GitHub](https://github.com/adayangolzz/sedna-modified/milestones) represent the most up-to-date plans.
+The [milestones defined in GitHub](https://github.com/dayu-autostreamer/dayu-sedna/milestones) represent the most up-to-date plans.
 
 ## 2022 Roadmap
 

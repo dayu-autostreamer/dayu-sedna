@@ -32,10 +32,10 @@ go version
 Clone the `Sedna` repo:
 
 ```shell
-git clone http://github.com/adayangolzz/sedna-modified.git
+git clone http://github.com/dayu-autostreamer/dayu-sedna.git
 ```
 
-**Note**: If you want to add or change API in [pkg/apis](/pkg/apis), you need to checkout the code to `$GOPATH/src/github.com/adayangolzz/sedna-modified`.
+**Note**: If you want to add or change API in [pkg/apis](/pkg/apis), you need to checkout the code to `$GOPATH/src/github.com/dayu-autostreamer/dayu-sedna`.
 
 ## 3. Set up Kubernetes/KubeEdge(optional)
 If you are planning to run or debug Sedna, you need to set up Kubernetes and KubeEdge.

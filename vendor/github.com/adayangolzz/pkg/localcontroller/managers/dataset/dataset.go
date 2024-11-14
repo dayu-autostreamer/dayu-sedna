@@ -27,14 +27,14 @@ import (
 
 	"k8s.io/klog/v2"
 
-	"github.com/adayangolzz/sedna-modified/cmd/sedna-lc/app/options"
-	sednav1 "github.com/adayangolzz/sedna-modified/pkg/apis/sedna/v1alpha1"
-	"github.com/adayangolzz/sedna-modified/pkg/globalmanager/runtime"
-	"github.com/adayangolzz/sedna-modified/pkg/localcontroller/db"
-	clienttypes "github.com/adayangolzz/sedna-modified/pkg/localcontroller/gmclient"
-	"github.com/adayangolzz/sedna-modified/pkg/localcontroller/storage"
-	"github.com/adayangolzz/sedna-modified/pkg/localcontroller/util"
-	workertypes "github.com/adayangolzz/sedna-modified/pkg/localcontroller/worker"
+	"github.com/dayu-autostreamer/dayu-sedna/cmd/sedna-lc/app/options"
+	sednav1 "github.com/dayu-autostreamer/dayu-sedna/pkg/apis/sedna/v1alpha1"
+	"github.com/dayu-autostreamer/dayu-sedna/pkg/globalmanager/runtime"
+	"github.com/dayu-autostreamer/dayu-sedna/pkg/localcontroller/db"
+	clienttypes "github.com/dayu-autostreamer/dayu-sedna/pkg/localcontroller/gmclient"
+	"github.com/dayu-autostreamer/dayu-sedna/pkg/localcontroller/storage"
+	"github.com/dayu-autostreamer/dayu-sedna/pkg/localcontroller/util"
+	workertypes "github.com/dayu-autostreamer/dayu-sedna/pkg/localcontroller/worker"
 )
 
 const (

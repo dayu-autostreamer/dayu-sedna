@@ -25,13 +25,13 @@ import (
 	kubeinformers "k8s.io/client-go/informers"
 	"k8s.io/klog/v2"
 
-	clientset "github.com/adayangolzz/sedna-modified/pkg/client/clientset/versioned"
-	sednainformers "github.com/adayangolzz/sedna-modified/pkg/client/informers/externalversions"
-	"github.com/adayangolzz/sedna-modified/pkg/globalmanager/config"
-	"github.com/adayangolzz/sedna-modified/pkg/globalmanager/messagelayer"
-	websocket "github.com/adayangolzz/sedna-modified/pkg/globalmanager/messagelayer/ws"
-	"github.com/adayangolzz/sedna-modified/pkg/globalmanager/runtime"
-	"github.com/adayangolzz/sedna-modified/pkg/globalmanager/utils"
+	clientset "github.com/dayu-autostreamer/dayu-sedna/pkg/client/clientset/versioned"
+	sednainformers "github.com/dayu-autostreamer/dayu-sedna/pkg/client/informers/externalversions"
+	"github.com/dayu-autostreamer/dayu-sedna/pkg/globalmanager/config"
+	"github.com/dayu-autostreamer/dayu-sedna/pkg/globalmanager/messagelayer"
+	websocket "github.com/dayu-autostreamer/dayu-sedna/pkg/globalmanager/messagelayer/ws"
+	"github.com/dayu-autostreamer/dayu-sedna/pkg/globalmanager/runtime"
+	"github.com/dayu-autostreamer/dayu-sedna/pkg/globalmanager/utils"
 )
 
 // Manager defines the controller manager

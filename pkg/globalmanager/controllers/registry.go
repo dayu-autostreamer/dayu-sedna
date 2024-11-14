@@ -17,19 +17,19 @@ limitations under the License.
 package controllers
 
 import (
-	"github.com/adayangolzz/sedna-modified/pkg/globalmanager/controllers/dataset"
-	fe "github.com/adayangolzz/sedna-modified/pkg/globalmanager/controllers/featureextraction"
-	fl "github.com/adayangolzz/sedna-modified/pkg/globalmanager/controllers/federatedlearning"
-	il "github.com/adayangolzz/sedna-modified/pkg/globalmanager/controllers/incrementallearning"
-	ji "github.com/adayangolzz/sedna-modified/pkg/globalmanager/controllers/jointinference"
+	"github.com/dayu-autostreamer/dayu-sedna/pkg/globalmanager/controllers/dataset"
+	fe "github.com/dayu-autostreamer/dayu-sedna/pkg/globalmanager/controllers/featureextraction"
+	fl "github.com/dayu-autostreamer/dayu-sedna/pkg/globalmanager/controllers/federatedlearning"
+	il "github.com/dayu-autostreamer/dayu-sedna/pkg/globalmanager/controllers/incrementallearning"
+	ji "github.com/dayu-autostreamer/dayu-sedna/pkg/globalmanager/controllers/jointinference"
 	// DONE: mulji路径
 	// mulji 
-	mulji "github.com/adayangolzz/sedna-modified/pkg/globalmanager/controllers/jointmultiedge"
-	ll "github.com/adayangolzz/sedna-modified/pkg/globalmanager/controllers/lifelonglearning"
-	objs "github.com/adayangolzz/sedna-modified/pkg/globalmanager/controllers/objectsearch"
-	reid "github.com/adayangolzz/sedna-modified/pkg/globalmanager/controllers/reid"
-	va "github.com/adayangolzz/sedna-modified/pkg/globalmanager/controllers/videoanalytics"
-	"github.com/adayangolzz/sedna-modified/pkg/globalmanager/runtime"
+	mulji "github.com/dayu-autostreamer/dayu-sedna/pkg/globalmanager/controllers/jointmultiedge"
+	ll "github.com/dayu-autostreamer/dayu-sedna/pkg/globalmanager/controllers/lifelonglearning"
+	objs "github.com/dayu-autostreamer/dayu-sedna/pkg/globalmanager/controllers/objectsearch"
+	reid "github.com/dayu-autostreamer/dayu-sedna/pkg/globalmanager/controllers/reid"
+	va "github.com/dayu-autostreamer/dayu-sedna/pkg/globalmanager/controllers/videoanalytics"
+	"github.com/dayu-autostreamer/dayu-sedna/pkg/globalmanager/runtime"
 )
 
 type FeatureFactory = func(*runtime.ControllerContext) (runtime.FeatureControllerI, error)

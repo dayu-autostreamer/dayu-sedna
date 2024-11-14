@@ -21,8 +21,8 @@ package versioned
 import (
 	"fmt"
 
-	// sednav1alpha1 "github.com/adayangolzz/sedna-modified/pkg/client/clientset/versioned/typed/sedna/v1alpha1"
-	sednav1alpha1 "github.com/adayangolzz/sedna-modified/pkg/client/clientset/versioned/typed/sedna/v1alpha1"
+	// sednav1alpha1 "github.com/dayu-autostreamer/dayu-sedna/pkg/client/clientset/versioned/typed/sedna/v1alpha1"
+	sednav1alpha1 "github.com/dayu-autostreamer/dayu-sedna/pkg/client/clientset/versioned/typed/sedna/v1alpha1"
 	discovery "k8s.io/client-go/discovery"
 	rest "k8s.io/client-go/rest"
 	flowcontrol "k8s.io/client-go/util/flowcontrol"

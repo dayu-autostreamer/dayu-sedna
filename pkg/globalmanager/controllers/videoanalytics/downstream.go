@@ -19,7 +19,7 @@ package videoanalytics
 import (
 	"k8s.io/apimachinery/pkg/watch"
 
-	"github.com/adayangolzz/sedna-modified/pkg/globalmanager/runtime"
+	"github.com/dayu-autostreamer/dayu-sedna/pkg/globalmanager/runtime"
 )
 
 // NOTE: For this job we don't need synchronization with the edge

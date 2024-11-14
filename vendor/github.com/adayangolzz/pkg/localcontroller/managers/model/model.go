@@ -19,11 +19,11 @@ package model
 import (
 	"encoding/json"
 
-	sednav1 "github.com/adayangolzz/sedna-modified/pkg/apis/sedna/v1alpha1"
-	"github.com/adayangolzz/sedna-modified/pkg/localcontroller/db"
-	clienttypes "github.com/adayangolzz/sedna-modified/pkg/localcontroller/gmclient"
-	"github.com/adayangolzz/sedna-modified/pkg/localcontroller/util"
-	workertypes "github.com/adayangolzz/sedna-modified/pkg/localcontroller/worker"
+	sednav1 "github.com/dayu-autostreamer/dayu-sedna/pkg/apis/sedna/v1alpha1"
+	"github.com/dayu-autostreamer/dayu-sedna/pkg/localcontroller/db"
+	clienttypes "github.com/dayu-autostreamer/dayu-sedna/pkg/localcontroller/gmclient"
+	"github.com/dayu-autostreamer/dayu-sedna/pkg/localcontroller/util"
+	workertypes "github.com/dayu-autostreamer/dayu-sedna/pkg/localcontroller/worker"
 )
 
 // ModelManager defines model manager

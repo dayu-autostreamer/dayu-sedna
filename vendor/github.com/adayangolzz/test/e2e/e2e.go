@@ -24,7 +24,7 @@ import (
 	"github.com/onsi/gomega"
 	"k8s.io/component-base/logs"
 
-	"github.com/adayangolzz/sedna-modified/test/e2e/framework"
+	"github.com/dayu-autostreamer/dayu-sedna/test/e2e/framework"
 )
 
 func RunE2ETests(t *testing.T) {

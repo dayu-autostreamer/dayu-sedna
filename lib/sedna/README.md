@@ -15,7 +15,7 @@ The build process is tested with Python 3.6, Ubuntu 18.04.5 LTS
 
 ```bash
 # Clone the repo
-git clone --recursive https://github.com/adayangolzz/sedna-modified.git
+git clone --recursive https://github.com/dayu-autostreamer/dayu-sedna.git
 cd sedna/lib
 
 # Build the pip package

@@ -22,7 +22,7 @@
 # Unstructured Lifelong Learning
 ## Motivation
 
-Edge cloud synergy lifelong learning has been proposed and realized through Sedna in [ATCII example](https://github.com/adayangolzz/sedna-modified/blob/main/examples/lifelong_learning/atcii/README.md) which handles structured data. However, [version v0.5.1](https://github.com/adayangolzz/sedna-modified/releases/tag/v0.5.1) of Sedna lifelong learning scheme has the following limitations.
+Edge cloud synergy lifelong learning has been proposed and realized through Sedna in [ATCII example](https://github.com/dayu-autostreamer/dayu-sedna/blob/main/examples/lifelong_learning/atcii/README.md) which handles structured data. However, [version v0.5.1](https://github.com/dayu-autostreamer/dayu-sedna/releases/tag/v0.5.1) of Sedna lifelong learning scheme has the following limitations.
 
 * **It can't directly apply to unstructured data scenarios** such as images, texts, voices, etc, which instead a majority of AI applications have been working on. The adaption to unstructured data is essential for Sedna lifelong learning to support more diversified applications.
 
@@ -230,7 +230,7 @@ Updates are categorized below along with the possible actions that the upstream 
 |Lifelong-learning-job Reported State Updated    |  The controller appends the reported status of the job by LC in the cloud. |
 
 ### Details of api between GM(cloud) and LC(edge)
-[Reference](https://github.com/adayangolzz/sedna-modified/blob/main/docs/proposals/incremental-learning.md#details-of-api-between-gmcloud-and-lcedge)
+[Reference](https://github.com/dayu-autostreamer/dayu-sedna/blob/main/docs/proposals/incremental-learning.md#details-of-api-between-gmcloud-and-lcedge)
 
 ### The flows of lifelong learning job
 - Flow of the job creation:

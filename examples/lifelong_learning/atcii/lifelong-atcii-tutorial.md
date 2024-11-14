@@ -1,4 +1,4 @@
-This tutorial targets at [lifelong learning job in thermal comfort prediction scenario](https://github.com/adayangolzz/sedna-modified/blob/main/examples/lifelong_learning/atcii/README.md), and includes how to run the default example with customized configurations, as well as how to develop and integrate user-defined modules.
+This tutorial targets at [lifelong learning job in thermal comfort prediction scenario](https://github.com/dayu-autostreamer/dayu-sedna/blob/main/examples/lifelong_learning/atcii/README.md), and includes how to run the default example with customized configurations, as well as how to develop and integrate user-defined modules.
 # 1 Configure Default Example
 With Custom Resource Definitions (CRDs) of Kubernetes, developers are able to configure the default lifelong process using the following configurations.
 ## 1.1 Install Sedna
@@ -173,17 +173,17 @@ Artifacts including multi-task learning models, partitioned sample sets, etc. ca
 
 ## 2.1 Before Development
 
-Before you start development, you should prepare the [development environment](https://github.com/adayangolzz/sedna-modified/blob/main/docs/contributing/prepare-environment.md) and learn about the [interface design of Sedna](https://sedna.readthedocs.io/en/latest/autoapi/lib/sedna/index.html).
+Before you start development, you should prepare the [development environment](https://github.com/dayu-autostreamer/dayu-sedna/blob/main/docs/contributing/prepare-environment.md) and learn about the [interface design of Sedna](https://sedna.readthedocs.io/en/latest/autoapi/lib/sedna/index.html).
 
 ## 2.2 Develop Sedna AI Module
 
-The Sedna framework components are decoupled and the registration mechanism is used to combine functional components to facilitate function and algorithm expansion. For details about the Sedna architecture and main mechanisms, see [Lib README](https://github.com/adayangolzz/sedna-modified/blob/51219027a0ec915bf3afb266dc5f9a7fb3880074/lib/sedna/README.md).
+The Sedna framework components are decoupled and the registration mechanism is used to combine functional components to facilitate function and algorithm expansion. For details about the Sedna architecture and main mechanisms, see [Lib README](https://github.com/dayu-autostreamer/dayu-sedna/blob/51219027a0ec915bf3afb266dc5f9a7fb3880074/lib/sedna/README.md).
 
 The following contents explains how to develop customized AI modules of a Sedna project, including **dataset**, **base model**, **algorithm**, etc.
 
 ### 2.2.1 Import Service Datasets
 
-During Sedna application development, the first problem encountered is how to import service data sets to Sedna. Sedna provides interfaces and public methods related to data conversion and sampling in the [Dataset class](https://github.com/adayangolzz/sedna-modified/blob/c763c1a90e74b4ff1ab0afa06fb976fbb5efa512/lib/sedna/datasources/__init__.py). 
+During Sedna application development, the first problem encountered is how to import service data sets to Sedna. Sedna provides interfaces and public methods related to data conversion and sampling in the [Dataset class](https://github.com/dayu-autostreamer/dayu-sedna/blob/c763c1a90e74b4ff1ab0afa06fb976fbb5efa512/lib/sedna/datasources/__init__.py). 
 
 All dataset classes of Sedna are inherited from the base class `sedna.datasources.BaseDataSource`. This base class defines the interfaces required by the dataset, provides attributes such as data_parse_func, save, and concat, and provides default implementation. The derived class can reload these default implementations as required.
 
@@ -290,7 +290,7 @@ import unittest
 
 def _load_txt_dataset(dataset_url):
     # use original dataset url,
-    # see https://github.com/adayangolzz/sedna-modified/issues/35
+    # see https://github.com/dayu-autostreamer/dayu-sedna/issues/35
     return os.path.abspath(dataset_url)
 
 
@@ -312,7 +312,7 @@ Estimator is a high-level API that greatly simplifies machine learning programmi
 
 **(1). Define an Estimator**
 
-In lifelong learning ATCII case, Estimator is defined in [interface.py](https://github.com/adayangolzz/sedna-modified/blob/c763c1a90e74b4ff1ab0afa06fb976fbb5efa512/examples/lifelong_learning/atcii/interface.py), and users can replace the existing XGBoost model with the model that best suits their purpose.
+In lifelong learning ATCII case, Estimator is defined in [interface.py](https://github.com/dayu-autostreamer/dayu-sedna/blob/c763c1a90e74b4ff1ab0afa06fb976fbb5efa512/examples/lifelong_learning/atcii/interface.py), and users can replace the existing XGBoost model with the model that best suits their purpose.
 
  ```python
 # XGBOOST
@@ -427,9 +427,9 @@ deploySpec:
 
 **(1). Build worker images**
 
-First, you need to modify [lifelong-learning-atcii-classifier.Dockerfile](https://github.com/adayangolzz/sedna-modified/blob/c763c1a90e74b4ff1ab0afa06fb976fbb5efa512/examples/lifelong-learning-atcii-classifier.Dockerfile) based on your development.
+First, you need to modify [lifelong-learning-atcii-classifier.Dockerfile](https://github.com/dayu-autostreamer/dayu-sedna/blob/c763c1a90e74b4ff1ab0afa06fb976fbb5efa512/examples/lifelong-learning-atcii-classifier.Dockerfile) based on your development.
 
-Then generate Images by the script [build_images.sh](https://github.com/adayangolzz/sedna-modified/blob/main/examples/build_image.sh).
+Then generate Images by the script [build_images.sh](https://github.com/dayu-autostreamer/dayu-sedna/blob/main/examples/build_image.sh).
 
 **(2). Start customized lifelong job**
 
@@ -437,4 +437,4 @@ This process is similar to the process described in section `1.4`, but remember 
 
 ## 2.4 Further Development
 
-In addition to developing on the lifelong learning case, users can also [develop the control plane](https://github.com/adayangolzz/sedna-modified/blob/main/docs/contributing/control-plane/development.md) of the Sedna project, as well as [adding a new synergy feature](https://github.com/adayangolzz/sedna-modified/blob/51219027a0ec915bf3afb266dc5f9a7fb3880074/docs/contributing/control-plane/add-a-new-synergy-feature.md).
+In addition to developing on the lifelong learning case, users can also [develop the control plane](https://github.com/dayu-autostreamer/dayu-sedna/blob/main/docs/contributing/control-plane/development.md) of the Sedna project, as well as [adding a new synergy feature](https://github.com/dayu-autostreamer/dayu-sedna/blob/51219027a0ec915bf3afb266dc5f9a7fb3880074/docs/contributing/control-plane/add-a-new-synergy-feature.md).

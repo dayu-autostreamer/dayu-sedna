@@ -19,8 +19,8 @@ limitations under the License.
 package sedna
 
 import (
-	internalinterfaces "github.com/adayangolzz/sedna-modified/pkg/client/informers/externalversions/internalinterfaces"
-	v1alpha1 "github.com/adayangolzz/sedna-modified/pkg/client/informers/externalversions/sedna/v1alpha1"
+	internalinterfaces "github.com/dayu-autostreamer/dayu-sedna/pkg/client/informers/externalversions/internalinterfaces"
+	v1alpha1 "github.com/dayu-autostreamer/dayu-sedna/pkg/client/informers/externalversions/sedna/v1alpha1"
 )
 
 // Interface provides access to each of this group's versions.

@@ -40,11 +40,11 @@ import (
 	"k8s.io/klog/v2"
 	k8scontroller "k8s.io/kubernetes/pkg/controller"
 
-	sednav1 "github.com/adayangolzz/sedna-modified/pkg/apis/sedna/v1alpha1"
-	sednaclientset "github.com/adayangolzz/sedna-modified/pkg/client/clientset/versioned/typed/sedna/v1alpha1"
-	sednav1listers "github.com/adayangolzz/sedna-modified/pkg/client/listers/sedna/v1alpha1"
-	"github.com/adayangolzz/sedna-modified/pkg/globalmanager/config"
-	"github.com/adayangolzz/sedna-modified/pkg/globalmanager/runtime"
+	sednav1 "github.com/dayu-autostreamer/dayu-sedna/pkg/apis/sedna/v1alpha1"
+	sednaclientset "github.com/dayu-autostreamer/dayu-sedna/pkg/client/clientset/versioned/typed/sedna/v1alpha1"
+	sednav1listers "github.com/dayu-autostreamer/dayu-sedna/pkg/client/listers/sedna/v1alpha1"
+	"github.com/dayu-autostreamer/dayu-sedna/pkg/globalmanager/config"
+	"github.com/dayu-autostreamer/dayu-sedna/pkg/globalmanager/runtime"
 )
 
 const (

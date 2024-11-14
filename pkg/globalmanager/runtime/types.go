@@ -19,7 +19,7 @@ package runtime
 import (
 	"time"
 
-	"github.com/adayangolzz/sedna-modified/pkg/globalmanager/config"
+	"github.com/dayu-autostreamer/dayu-sedna/pkg/globalmanager/config"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	k8sruntime "k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -27,8 +27,8 @@ import (
 	kubeinformers "k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
 
-	sednaclientset "github.com/adayangolzz/sedna-modified/pkg/client/clientset/versioned"
-	sednainformers "github.com/adayangolzz/sedna-modified/pkg/client/informers/externalversions"
+	sednaclientset "github.com/dayu-autostreamer/dayu-sedna/pkg/client/clientset/versioned"
+	sednainformers "github.com/dayu-autostreamer/dayu-sedna/pkg/client/informers/externalversions"
 )
 
 const (

@@ -11,10 +11,10 @@
 [development preparation guide]: ../contributing/prepare-environment.md
 [add-feature-guide]: ../contributing/control-plane/add-a-new-synergy-feature.md
 
-[sedna home]: https://github.com/adayangolzz/sedna-modified
-[issues]: https://github.com/adayangolzz/sedna-modified/issues
-[file-an-issue]: https://github.com/adayangolzz/sedna-modified/issues/new/choose
-[file-a-fr]: https://github.com/adayangolzz/sedna-modified/issues/new?labels=kind%2Ffeature&template=enhancement.md
+[sedna home]: https://github.com/dayu-autostreamer/dayu-sedna
+[issues]: https://github.com/dayu-autostreamer/dayu-sedna/issues
+[file-an-issue]: https://github.com/dayu-autostreamer/dayu-sedna/issues/new/choose
+[file-a-fr]: https://github.com/dayu-autostreamer/dayu-sedna/issues/new?labels=kind%2Ffeature&template=enhancement.md
 
 [github]: https://github.com/
 [kubernetes documentation style guide]: https://github.com/kubernetes/community/blob/master/contributors/guide/style-guide.md

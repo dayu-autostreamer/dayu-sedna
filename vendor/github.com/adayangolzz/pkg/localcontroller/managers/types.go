@@ -17,8 +17,8 @@ limitations under the License.
 package managers
 
 import (
-	clienttype "github.com/adayangolzz/sedna-modified/pkg/localcontroller/gmclient"
-	workertypes "github.com/adayangolzz/sedna-modified/pkg/localcontroller/worker"
+	clienttype "github.com/dayu-autostreamer/dayu-sedna/pkg/localcontroller/gmclient"
+	workertypes "github.com/dayu-autostreamer/dayu-sedna/pkg/localcontroller/worker"
 )
 
 // FeatureManager defines feature managers

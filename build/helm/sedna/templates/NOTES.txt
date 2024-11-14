@@ -1,4 +1,4 @@
 *******************
 ***** SUCCESS *****
 *******************
-* Visit https://github.com/adayangolzz/sedna-modified for more information.
+* Visit https://github.com/dayu-autostreamer/dayu-sedna for more information.

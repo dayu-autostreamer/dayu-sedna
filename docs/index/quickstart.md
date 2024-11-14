@@ -177,7 +177,7 @@ Contributions are very welcome!
 
 Sedna is an open source project and in the spirit of openness and freedom, we welcome new contributors to join us. 
 You can get in touch with the community according to the ways:
-* [Github Issues](https://github.com/adayangolzz/sedna-modified/issues)
+* [Github Issues](https://github.com/dayu-autostreamer/dayu-sedna/issues)
 * [Regular Community Meeting](https://zoom.us/j/4167237304)
 * [slack channel](https://app.slack.com/client/TDZ5TGXQW/C01EG84REVB/details)
 

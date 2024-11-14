@@ -1,7 +1,7 @@
 # User Guide for Observability Management
 This guide covers how to install Observability Management on an existing Sedna environment.
 
-If you don't have an existing Sedna or KubeEdge environment, you can follow the [Sedna Installation Document](https://github.com/adayangolzz/sedna-modified/blob/main/docs/setup/install.md) to install what you need.
+If you don't have an existing Sedna or KubeEdge environment, you can follow the [Sedna Installation Document](https://github.com/dayu-autostreamer/dayu-sedna/blob/main/docs/setup/install.md) to install what you need.
 
 ## Get Helm Repos Info
 This project is based on Grafana and Prometheus community, so you need to get helm repos firstly.

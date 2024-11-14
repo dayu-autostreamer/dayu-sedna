@@ -230,17 +230,17 @@ Knowledgebase contents including multi-task learning models, dataset, etc., can 
 
 # 2 Develop and Integrate Customized Modules
 
-Before starting development, you should prepare the [development environment](https://github.com/adayangolzz/sedna-modified/blob/main/docs/contributing/prepare-environment.md) and learn about the [interface design of Sedna](https://sedna.readthedocs.io/en/latest/autoapi/lib/sedna/index.html).
+Before starting development, you should prepare the [development environment](https://github.com/dayu-autostreamer/dayu-sedna/blob/main/docs/contributing/prepare-environment.md) and learn about the [interface design of Sedna](https://sedna.readthedocs.io/en/latest/autoapi/lib/sedna/index.html).
 
 ## 2.1 Develop Sedna AI Module
 
-The Sedna framework components are decoupled and the registration mechanism is used to combine functional components to facilitate function and algorithm expansion. For details about the Sedna architecture and main mechanisms, see [Lib README](https://github.com/adayangolzz/sedna-modified/blob/51219027a0ec915bf3afb266dc5f9a7fb3880074/lib/sedna/README.md).
+The Sedna framework components are decoupled and the registration mechanism is used to combine functional components to facilitate function and algorithm expansion. For details about the Sedna architecture and main mechanisms, see [Lib README](https://github.com/dayu-autostreamer/dayu-sedna/blob/51219027a0ec915bf3afb266dc5f9a7fb3880074/lib/sedna/README.md).
 
 The following contents explains how to develop customized AI modules of a Sedna project, including **dataset**, **base model**, **algorithms**, etc.
 
 ### 2.1.1 Import Service Datasets
 
-During Sedna application development, the first problem users encounter is how to import service datasets to Sedna. Sedna provides interfaces and public methods related to data conversion and sampling in the [Dataset class](https://github.com/adayangolzz/sedna-modified/blob/c763c1a90e74b4ff1ab0afa06fb976fbb5efa512/lib/sedna/datasources/__init__.py). 
+During Sedna application development, the first problem users encounter is how to import service datasets to Sedna. Sedna provides interfaces and public methods related to data conversion and sampling in the [Dataset class](https://github.com/dayu-autostreamer/dayu-sedna/blob/c763c1a90e74b4ff1ab0afa06fb976fbb5efa512/lib/sedna/datasources/__init__.py). 
 
 All dataset classes of Sedna are inherited from the base class `sedna.datasources.BaseDataSource`. This base class defines the interfaces and attributes to process datasets customizedly and provides default implementation. The derived class can reload these default implementations as required.
 
@@ -580,7 +580,7 @@ Users can configure task definition algorithm and its parameters by dictionary a
 
 First, you need to modify lifelong-learning-cityscapes-segmentation.Dockerfile based on your development.
 
-Then generate Images by the script [build_images.sh](https://github.com/adayangolzz/sedna-modified/blob/main/examples/build_image.sh).
+Then generate Images by the script [build_images.sh](https://github.com/dayu-autostreamer/dayu-sedna/blob/main/examples/build_image.sh).
 
 **(2). Start customized lifelong job**
 
@@ -588,6 +588,6 @@ This process is similar to that in section `1.4`. But remember to modify the dat
 
 ## 2.3 Further Development
 
-In addition to developing on the lifelong learning case, users can also [develop the control plane](https://github.com/adayangolzz/sedna-modified/blob/main/docs/contributing/control-plane/development.md) of the Sedna project, as well as [adding a new synergy feature](https://github.com/adayangolzz/sedna-modified/blob/51219027a0ec915bf3afb266dc5f9a7fb3880074/docs/contributing/control-plane/add-a-new-synergy-feature.md).
+In addition to developing on the lifelong learning case, users can also [develop the control plane](https://github.com/dayu-autostreamer/dayu-sedna/blob/main/docs/contributing/control-plane/development.md) of the Sedna project, as well as [adding a new synergy feature](https://github.com/dayu-autostreamer/dayu-sedna/blob/51219027a0ec915bf3afb266dc5f9a7fb3880074/docs/contributing/control-plane/add-a-new-synergy-feature.md).
 
 

@@ -23,10 +23,10 @@ import (
 	"github.com/emicklei/go-restful/v3"
 	"k8s.io/klog/v2"
 
-	"github.com/adayangolzz/sedna-modified/cmd/sedna-lc/app/options"
-	"github.com/adayangolzz/sedna-modified/pkg/localcontroller/common/constants"
-	"github.com/adayangolzz/sedna-modified/pkg/localcontroller/managers"
-	workertypes "github.com/adayangolzz/sedna-modified/pkg/localcontroller/worker"
+	"github.com/dayu-autostreamer/dayu-sedna/cmd/sedna-lc/app/options"
+	"github.com/dayu-autostreamer/dayu-sedna/pkg/localcontroller/common/constants"
+	"github.com/dayu-autostreamer/dayu-sedna/pkg/localcontroller/managers"
+	workertypes "github.com/dayu-autostreamer/dayu-sedna/pkg/localcontroller/worker"
 )
 
 // Server defines server

@@ -24,8 +24,8 @@ import (
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/klog/v2"
 
-	sednav1 "github.com/adayangolzz/sedna-modified/pkg/apis/sedna/v1alpha1"
-	"github.com/adayangolzz/sedna-modified/pkg/globalmanager/runtime"
+	sednav1 "github.com/dayu-autostreamer/dayu-sedna/pkg/apis/sedna/v1alpha1"
+	"github.com/dayu-autostreamer/dayu-sedna/pkg/globalmanager/runtime"
 )
 
 func (c *Controller) syncToEdge(eventType watch.EventType, obj interface{}) error {

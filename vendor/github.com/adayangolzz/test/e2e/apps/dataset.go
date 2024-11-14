@@ -23,10 +23,10 @@ import (
 	"github.com/onsi/ginkgo"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	sednav1alpha1 "github.com/adayangolzz/sedna-modified/pkg/apis/sedna/v1alpha1"
-	sednaclient "github.com/adayangolzz/sedna-modified/pkg/client/clientset/versioned"
+	sednav1alpha1 "github.com/dayu-autostreamer/dayu-sedna/pkg/apis/sedna/v1alpha1"
+	sednaclient "github.com/dayu-autostreamer/dayu-sedna/pkg/client/clientset/versioned"
 
-	"github.com/adayangolzz/sedna-modified/test/e2e/framework"
+	"github.com/dayu-autostreamer/dayu-sedna/test/e2e/framework"
 )
 
 var _ = ginkgo.Describe("Dataset", func() {

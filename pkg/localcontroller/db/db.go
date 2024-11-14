@@ -26,8 +26,8 @@ import (
 	"gorm.io/gorm"
 	"k8s.io/klog/v2"
 
-	"github.com/adayangolzz/sedna-modified/pkg/localcontroller/common/constants"
-	"github.com/adayangolzz/sedna-modified/pkg/localcontroller/util"
+	"github.com/dayu-autostreamer/dayu-sedna/pkg/localcontroller/common/constants"
+	"github.com/dayu-autostreamer/dayu-sedna/pkg/localcontroller/util"
 )
 
 // Resource defines resource (e.g., dataset, model, jointinferenceservice) table

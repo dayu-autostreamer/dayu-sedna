@@ -17,7 +17,7 @@ limitations under the License.
 package objectsearch
 
 import (
-	"github.com/adayangolzz/sedna-modified/pkg/globalmanager/runtime"
+	"github.com/dayu-autostreamer/dayu-sedna/pkg/globalmanager/runtime"
 )
 
 // TODO: updateFromEdge syncs the edge updates to k8s

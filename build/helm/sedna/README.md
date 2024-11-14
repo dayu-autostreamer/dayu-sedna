@@ -1,11 +1,11 @@
 # Sedna Helm Charts
 
-Visit https://github.com/adayangolzz/sedna-modified for more information.
+Visit https://github.com/dayu-autostreamer/dayu-sedna for more information.
 
 ## Install
 
 ```
-$ git clone https://github.com/adayangolzz/sedna-modified.git
+$ git clone https://github.com/dayu-autostreamer/dayu-sedna.git
 $ cd sedna
 $ helm install sedna ./build/helm/sedna
 ```

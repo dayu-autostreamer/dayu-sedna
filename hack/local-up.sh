@@ -452,7 +452,7 @@ do_up() {
 
   # here local up kubeedge before building our images, this could avoid our
   # images be removed since edgecore image gc would be triggered when high
-  # image usage(>=80%), see https://github.com/adayangolzz/sedna-modified/issues/26 for
+  # image usage(>=80%), see https://github.com/dayu-autostreamer/dayu-sedna/issues/26 for
   # more details.
   localup_kubeedge
 

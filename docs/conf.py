@@ -30,7 +30,7 @@ except ModuleNotFoundError:
                            "install", "sphinx-autoapi"])
 
 _base_path = os.path.abspath('..')
-BASE_URL = 'https://github.com/adayangolzz/sedna-modified/'
+BASE_URL = 'https://github.com/dayu-autostreamer/dayu-sedna/'
 
 sys.path.append(os.path.join(_base_path, "lib"))
 sys.path.append(_base_path)

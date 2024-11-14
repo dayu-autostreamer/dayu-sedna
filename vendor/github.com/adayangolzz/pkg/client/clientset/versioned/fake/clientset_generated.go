@@ -19,13 +19,13 @@ limitations under the License.
 package fake
 
 import (
-	// clientset "github.com/adayangolzz/sedna-modified/pkg/client/clientset/versioned"
-	clientset "github.com/adayangolzz/sedna-modified/pkg/client/clientset/versioned"
-	// sednav1alpha1 "github.com/adayangolzz/sedna-modified/pkg/client/clientset/versioned/typed/sedna/v1alpha1"
-	// fakesednav1alpha1 "github.com/adayangolzz/sedna-modified/pkg/client/clientset/versioned/typed/sedna/v1alpha1/fake"
+	// clientset "github.com/dayu-autostreamer/dayu-sedna/pkg/client/clientset/versioned"
+	clientset "github.com/dayu-autostreamer/dayu-sedna/pkg/client/clientset/versioned"
+	// sednav1alpha1 "github.com/dayu-autostreamer/dayu-sedna/pkg/client/clientset/versioned/typed/sedna/v1alpha1"
+	// fakesednav1alpha1 "github.com/dayu-autostreamer/dayu-sedna/pkg/client/clientset/versioned/typed/sedna/v1alpha1/fake"
 	
-	sednav1alpha1 "github.com/adayangolzz/sedna-modified/pkg/client/clientset/versioned/typed/sedna/v1alpha1"
-	fakesednav1alpha1 "github.com/adayangolzz/sedna-modified/pkg/client/clientset/versioned/typed/sedna/v1alpha1/fake"
+	sednav1alpha1 "github.com/dayu-autostreamer/dayu-sedna/pkg/client/clientset/versioned/typed/sedna/v1alpha1"
+	fakesednav1alpha1 "github.com/dayu-autostreamer/dayu-sedna/pkg/client/clientset/versioned/typed/sedna/v1alpha1/fake"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
