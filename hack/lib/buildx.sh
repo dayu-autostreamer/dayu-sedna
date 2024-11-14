@@ -160,6 +160,8 @@ $speed_cmds
 sedna::buildx::push-multi-platform-images() {
   sedna::buildx::prepare_env
 
+  REGISTRY=${REG:-docker.io}
+
   bash scripts/storage-initializer/push_image.sh
 
   for component in ${COMPONENTS[@]}; do
@@ -170,6 +172,7 @@ sedna::buildx::push-multi-platform-images() {
 
     docker buildx build --push \
       --build-arg GO_LDFLAGS=${GO_LDFLAGS} \
+      --build-arg REG="${REGISTRY}" \
       --platform ${PLATFORMS} \
       -t ${IMAGE_REPO}/sedna-${component}:${IMAGE_TAG} \
       -f ${temp_dockerfile} .
@@ -180,6 +183,8 @@ sedna::buildx::push-multi-platform-images() {
 
 sedna::buildx::build-multi-platform-images() {
   sedna::buildx::prepare_env
+
+  REGISTRY=${REG:-docker.io}
 
   mkdir -p ${OUT_IMAGESPATH}
   arch_array=(${PLATFORMS//,/ })
@@ -196,6 +201,7 @@ sedna::buildx::build-multi-platform-images() {
 
       docker buildx build -o type=docker,dest=${dest_tar} \
         --build-arg GO_LDFLAGS=${GO_LDFLAGS} \
+        --build-arg REG="${REGISTRY}" \
         --platform ${arch} \
         -t ${IMAGE_REPO}/sedna-${component}:${IMAGE_TAG} \
         -f ${buildx_dockerfile} .

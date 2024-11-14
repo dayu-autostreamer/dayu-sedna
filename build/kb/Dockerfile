@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-FROM python:3.9-slim
+ARG REG=docker.io
+FROM ${REG}/python:3.9-slim
 
 RUN pip install colorlog~=4.7.2
 RUN pip install PyYAML~=5.4.1

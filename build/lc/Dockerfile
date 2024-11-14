@@ -16,7 +16,8 @@
 # LC has built sqlite3 which requires CGO with CGO_ENABLED=1
 # _speed_buildx_for_cgo_alpine_
 # FROM golang:1.16-alpine3.15 AS builder
-FROM docker.wanpeng.top/library/golang:1.16-alpine3.15 AS builder
+ARG REG=docker.io
+FROM ${REG}/library/golang:1.16-alpine3.15 AS builder
 LABEL stage=builder
 
 ARG GO_LDFLAGS
@@ -30,8 +31,8 @@ WORKDIR /code
 COPY . .
 RUN make build WHAT=lc GO_LDFLAGS=$GO_LDFLAGS OUT_DIR=_output
 
-
-FROM docker.wanpeng.top/library/alpine:3.11
+ARG REG=docker.io
+FROM $REG/library/alpine:3.11
 
 COPY --from=builder /code/_output/bin/sedna-lc /usr/local/bin/sedna-lc
 

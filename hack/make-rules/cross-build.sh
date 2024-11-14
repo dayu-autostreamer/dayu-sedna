@@ -21,4 +21,4 @@ set -o pipefail
 SEDNA_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd -P)"
 
 source "${SEDNA_ROOT}/hack/lib/init.sh"
-sedna::buildx::build-multi-platform-images
+sedna::buildx::push-multi-platform-images

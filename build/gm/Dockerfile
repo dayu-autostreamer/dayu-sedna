@@ -15,7 +15,9 @@
 # Add cross buildx improvement
 # _speed_buildx_for_go_
 # FROM golang:1.16-alpine3.15 AS builder
-FROM docker.wanpeng.top/library/golang:1.16-alpine3.15 AS builder
+
+ARG REG=docker.io
+FROM REG/library/golang:1.16-alpine3.15 AS builder
 LABEL stage=builder
 
 ARG GO_LDFLAGS
@@ -32,8 +34,9 @@ RUN make build WHAT=gm GO_LDFLAGS=$GO_LDFLAGS OUT_DIR=_output
 # ALT: just using go build
 # RUN CGO_ENABLED=0 go build -o _output/bin/sedna-gm -ldflags "$GO_LDFLAGS -w -s" cmd/sedna-gm/sedna-gm.go
 
-# FROM alpine:3.11
-FROM docker.wanpeng.top/library/alpine:3.11
+
+ARG REG=docker.io
+FROM $REG/library/alpine:3.11
 
 COPY --from=builder /code/_output/bin/sedna-gm /usr/local/bin/sedna-gm
 
