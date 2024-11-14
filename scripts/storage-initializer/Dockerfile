@@ -1,4 +1,5 @@
-FROM python:3-alpine
+ARG REG=docker.io
+FROM $REG/python:3-alpine
 
 RUN mkdir /code
 COPY requirements.txt /code
