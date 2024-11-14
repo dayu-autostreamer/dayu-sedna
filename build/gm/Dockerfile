@@ -17,7 +17,7 @@
 # FROM golang:1.16-alpine3.15 AS builder
 
 ARG REG=docker.io
-FROM REG/library/golang:1.16-alpine3.15 AS builder
+FROM $REG/library/golang:1.16-alpine3.15 AS builder
 LABEL stage=builder
 
 ARG GO_LDFLAGS
