@@ -18,8 +18,10 @@ cd "$(dirname "${BASH_SOURCE[0]}")"
 
 source build_image.sh
 
+REGISTRY=${REG:-docker.io}
+
 if [ -z "${PLATFORMS:-}" ]; then
   docker push $IMAGE
 else
-  docker buildx build --push --platform $PLATFORMS -t $IMAGE --label sedna=scripts .
+  docker buildx build --push --platform $PLATFORMS --build-arg REG="${REGISTRY}" -t $IMAGE --label sedna=scripts .
 fi
