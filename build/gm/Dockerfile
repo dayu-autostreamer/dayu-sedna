@@ -17,7 +17,7 @@
 # FROM golang:1.16-alpine3.15 AS builder
 
 ARG REG=docker.io
-FROM $REG/library/golang:1.16-alpine3.15 AS builder
+FROM $REG/golang:1.16-alpine3.15 AS builder
 LABEL stage=builder
 
 ARG GO_LDFLAGS
@@ -36,7 +36,7 @@ RUN make build WHAT=gm GO_LDFLAGS=$GO_LDFLAGS OUT_DIR=_output
 
 
 ARG REG=docker.io
-FROM $REG/library/alpine:3.11
+FROM $REG/alpine:3.11
 
 COPY --from=builder /code/_output/bin/sedna-gm /usr/local/bin/sedna-gm
 
