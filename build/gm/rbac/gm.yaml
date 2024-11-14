@@ -1,0 +1,123 @@
+# cluster role
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: sedna
+rules:
+  # list/watch these ai-feature crds
+  - apiGroups:
+    - sedna.io
+    resources:
+    - datasets
+    - models
+    - jointinferenceservices
+    - jointmultiedgeservices
+    - featureextractionservices
+    - federatedlearningjobs
+    - incrementallearningjobs
+    - lifelonglearningjobs
+    - objectsearchservices
+    - objecttrackingservices
+    - reidjobs
+    - videoanalyticsjobs
+    verbs:
+    - get
+    - list
+    - watch
+    - patch
+
+  # update crd status
+  - apiGroups:
+    - sedna.io
+    resources:
+    - datasets/status
+    - models/status
+    - jointinferenceservices/status
+    - jointmultiedgeservices/status
+    - federatedlearningjobs/status
+    - featureextractionservices/status
+    - incrementallearningjobs/status
+    - lifelonglearningjobs/status
+    - objectsearchservices/status
+    - objecttrackingservices/status
+    - reidjobs/status
+    - videoanalyticsjobs/status
+    verbs:
+    - get
+    - update
+
+  # current we implement ai features by k8s pods, services, deployments
+  - apiGroups:
+    - ""
+    - "apps"
+    resources:
+    - deployments
+    - pods
+    verbs:
+    - create
+    - get
+    - list
+    - watch
+    - update
+    - delete
+  - apiGroups:
+    - "apps"
+    resources:
+    - deployments
+    verbs:
+    - create
+    - get
+    - list
+    - watch
+    - delete
+
+  - apiGroups:
+    - ""
+    resources:
+    - services
+    - secrets
+    - configmaps
+    verbs:
+    - create
+    - list
+    - get
+    - delete
+
+  - apiGroups:
+    - ""
+    resources:
+    - nodes
+    verbs:
+    - get
+    - list
+
+  - apiGroups:
+    - ""
+    resources:
+    - events
+    verbs:
+    - create
+    - patch
+    - watch
+    - delete
+    - list
+    - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: sedna
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: sedna
+subjects:
+- kind: ServiceAccount
+  name: sedna
+  namespace: sedna
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: sedna
+  namespace: sedna
