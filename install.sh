@@ -34,7 +34,7 @@ REGISTRY=${REG:-docker.io}
 
 get_latest_version() {
   # get Sedna latest release version
-  local repo=kubeedge/sedna
+  local repo=dayu-autostreamer/dayu-sedna
   # output of this latest page:
   # ...
   # "tag_name": "v1.0.0",
@@ -270,7 +270,7 @@ spec:
       serviceAccountName: sedna
       containers:
       - name: gm
-        image: $REGISTRY/dayuhub/sedna-gm:$SEDNA_ACTION
+        image: $REGISTRY/dayuhub/sedna-gm:$SEDNA_VERSION
         command: ["sedna-gm", "--config", "/config/$config_file_name", "-v2"]
         volumeMounts:
         - name: gm-config
