@@ -28,26 +28,9 @@ set -o pipefail
 TMP_DIR='.'
 SEDNA_ROOT='.'
 
-DEFAULT_SEDNA_VERSION=v1.0
+SEDNA_VERSION=v1.0
 
 REGISTRY=${REG:-docker.io}
-
-get_latest_version() {
-  # get Sedna latest release version
-  local repo=dayu-autostreamer/dayu-sedna
-  # output of this latest page:
-  # ...
-  # "tag_name": "v1.0.0",
-  # ...
-  {
-    curl -s https://api.github.com/repos/$repo/releases/latest |
-    awk '/"tag_name":/&&$0=$2' |
-    sed 's/[",]//g'
-  } || echo $DEFAULT_SEDNA_VERSION # fallback
-}
-
-: ${SEDNA_VERSION:=$(get_latest_version)}
-SEDNA_VERSION=v${SEDNA_VERSION#v}
 
 _download_yamls() {
 
