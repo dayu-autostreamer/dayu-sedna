@@ -57,6 +57,26 @@ We assume that you have finished the k8s and kubeedge installation
   ```
 
 ## How to Build
+
+clone repository
+```bash
+git clone https://github.com/dayu-autostreamer/dayu-sedna
+```
+
+set meta information of building
+```bash
+# configure buildx (default as empty, example at hack/resource/buildkitd_template.toml)
+vim hack/resource/buildkitd.toml
+
+# set docker meta info
+# default REG is docker.io
+# default REPO is dayuhub
+# default TAG is v1.0
+export REG=xxx
+export REPO=xxx
+export TAG=xxx
+```
+
 build gm/lc/kb image
   ```sh
   make docker-cross-build

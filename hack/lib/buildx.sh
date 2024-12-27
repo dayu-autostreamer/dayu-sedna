@@ -31,7 +31,7 @@ sedna::buildx::prepare_env() {
   # Create a new builder which gives access to the new multi-architecture features.
   builder_instance="sedna-buildx"
   if ! docker buildx inspect $builder_instance >/dev/null 2>&1; then
-    docker buildx create --use --name $builder_instance --driver docker-container --config /etc/buildkit/buildkitd.toml
+    docker buildx create --use --name $builder_instance --driver docker-container --config "${EDGEMESH_ROOT}"/hack/resource/buildkitd.toml
   fi
   docker buildx use $builder_instance
 
