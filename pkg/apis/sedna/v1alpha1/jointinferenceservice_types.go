@@ -44,29 +44,117 @@ type JointInferenceServiceSpec struct {
 
 // EdgeWorker describes the data a edge worker should have
 type EdgeWorker struct {
-	File 			  ConfFile			`json:"file"`
-	LogLevel			  LogLevel			`json:"logLevel"`
+	File              ConfFile           `json:"file"`
+	LogLevel          LogLevel           `json:"logLevel"`
+	Mounts            []Mount            `json:"mounts,omitempty"`
 	HardExampleMining HardExampleMining  `json:"hardExampleMining"`
 	Template          v1.PodTemplateSpec `json:"template"`
 }
 
 // CloudWorker describes the data a cloud worker should have
 type CloudWorker struct {
-	File 			  ConfFile			`json:"file"`
-	LogLevel		  LogLevel			`json:"logLevel"`
+	File     ConfFile           `json:"file"`
+	LogLevel LogLevel           `json:"logLevel"`
+	Mounts   []Mount            `json:"mounts,omitempty"`
 	Template v1.PodTemplateSpec `json:"template"`
 }
 
-type LogLevel struct{
+type LogLevel struct {
 	Level string `json:"level"`
 }
 
 // ConfFile describes the configuration file
 type ConfFile struct {
-	Paths []string `json:"paths"`
+	// Path keeps backward compatibility with older yaml examples.
+	Path  string   `json:"path,omitempty"`
+	Paths []string `json:"paths,omitempty"`
 }
 
+func (in ConfFile) GetPaths() []string {
+	paths := make([]string, 0, len(in.Paths)+1)
+	seen := make(map[string]struct{}, len(in.Paths)+1)
 
+	appendPath := func(path string) {
+		if path == "" {
+			return
+		}
+		if _, ok := seen[path]; ok {
+			return
+		}
+		seen[path] = struct{}{}
+		paths = append(paths, path)
+	}
+
+	if in.Path != "" {
+		appendPath(in.Path)
+	}
+	for _, path := range in.Paths {
+		appendPath(path)
+	}
+	return paths
+}
+
+type MountSourceType string
+
+const (
+	MountSourceTypeHostPath              MountSourceType = "hostPath"
+	MountSourceTypePersistentVolumeClaim MountSourceType = "persistentVolumeClaim"
+	MountSourceTypeConfigMap             MountSourceType = "configMap"
+	MountSourceTypeSecret                MountSourceType = "secret"
+	MountSourceTypeEmptyDir              MountSourceType = "emptyDir"
+)
+
+// Mount describes a user-defined mount that should be injected into worker containers.
+type Mount struct {
+	Name       string      `json:"name,omitempty"`
+	Source     MountSource `json:"source"`
+	Target     MountTarget `json:"target,omitempty"`
+	Containers []string    `json:"containers,omitempty"`
+	EnvName    string      `json:"envName,omitempty"`
+}
+
+// MountSource describes where a mount comes from.
+type MountSource struct {
+	Type                  MountSourceType                   `json:"type,omitempty"`
+	HostPath              *HostPathMountSource              `json:"hostPath,omitempty"`
+	PersistentVolumeClaim *PersistentVolumeClaimMountSource `json:"persistentVolumeClaim,omitempty"`
+	ConfigMap             *ConfigMapMountSource             `json:"configMap,omitempty"`
+	Secret                *SecretMountSource                `json:"secret,omitempty"`
+	EmptyDir              *EmptyDirMountSource              `json:"emptyDir,omitempty"`
+}
+
+type HostPathMountSource struct {
+	Path string           `json:"path"`
+	Type *v1.HostPathType `json:"pathType,omitempty"`
+}
+
+type PersistentVolumeClaimMountSource struct {
+	ClaimName string `json:"claimName"`
+	ReadOnly  bool   `json:"readOnly,omitempty"`
+}
+
+type ConfigMapMountSource struct {
+	Name     string `json:"name"`
+	Optional *bool  `json:"optional,omitempty"`
+}
+
+type SecretMountSource struct {
+	SecretName string `json:"secretName"`
+	Optional   *bool  `json:"optional,omitempty"`
+}
+
+type EmptyDirMountSource struct {
+	Medium    v1.StorageMedium `json:"medium,omitempty"`
+	SizeLimit string           `json:"sizeLimit,omitempty"`
+}
+
+// MountTarget describes how a volume should be mounted into the container.
+type MountTarget struct {
+	Path             string                   `json:"path,omitempty"`
+	ReadOnly         bool                     `json:"readOnly,omitempty"`
+	SubPath          string                   `json:"subPath,omitempty"`
+	MountPropagation *v1.MountPropagationMode `json:"mountPropagation,omitempty"`
+}
 
 // HardExampleMining describes the hard example algorithm to be used
 type HardExampleMining struct {

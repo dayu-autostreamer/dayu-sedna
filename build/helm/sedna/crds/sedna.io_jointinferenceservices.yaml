@@ -32,6 +32,22 @@ spec:
             properties:
               cloudWorker:
                 properties:
+                  file:
+                    properties:
+                      path:
+                        type: string
+                      paths:
+                        items:
+                          type: string
+                        type: array
+                    type: object
+                  logLevel:
+                    properties:
+                      level:
+                        type: string
+                    required:
+                    - level
+                    type: object
                   model:
                     properties:
                       name:
@@ -39,6 +55,80 @@ spec:
                     required:
                     - name
                     type: object
+                  mounts:
+                    items:
+                      properties:
+                        containers:
+                          items:
+                            type: string
+                          type: array
+                        envName:
+                          type: string
+                        name:
+                          type: string
+                        source:
+                          properties:
+                            configMap:
+                              properties:
+                                name:
+                                  type: string
+                                optional:
+                                  type: boolean
+                              required:
+                              - name
+                              type: object
+                            emptyDir:
+                              properties:
+                                medium:
+                                  type: string
+                                sizeLimit:
+                                  type: string
+                              type: object
+                            hostPath:
+                              properties:
+                                path:
+                                  type: string
+                                pathType:
+                                  type: string
+                              required:
+                              - path
+                              type: object
+                            persistentVolumeClaim:
+                              properties:
+                                claimName:
+                                  type: string
+                                readOnly:
+                                  type: boolean
+                              required:
+                              - claimName
+                              type: object
+                            secret:
+                              properties:
+                                optional:
+                                  type: boolean
+                                secretName:
+                                  type: string
+                              required:
+                              - secretName
+                              type: object
+                            type:
+                              type: string
+                          type: object
+                        target:
+                          properties:
+                            mountPropagation:
+                              type: string
+                            path:
+                              type: string
+                            readOnly:
+                              type: boolean
+                            subPath:
+                              type: string
+                          type: object
+                      required:
+                      - source
+                      type: object
+                    type: array
                   template:
                     properties:
                       metadata:
@@ -2965,6 +3055,15 @@ spec:
                 type: object
               edgeWorker:
                 properties:
+                  file:
+                    properties:
+                      path:
+                        type: string
+                      paths:
+                        items:
+                          type: string
+                        type: array
+                    type: object
                   hardExampleMining:
                     properties:
                       name:
@@ -2984,6 +3083,13 @@ spec:
                     required:
                     - name
                     type: object
+                  logLevel:
+                    properties:
+                      level:
+                        type: string
+                    required:
+                    - level
+                    type: object
                   model:
                     properties:
                       name:
@@ -2991,6 +3097,80 @@ spec:
                     required:
                     - name
                     type: object
+                  mounts:
+                    items:
+                      properties:
+                        containers:
+                          items:
+                            type: string
+                          type: array
+                        envName:
+                          type: string
+                        name:
+                          type: string
+                        source:
+                          properties:
+                            configMap:
+                              properties:
+                                name:
+                                  type: string
+                                optional:
+                                  type: boolean
+                              required:
+                              - name
+                              type: object
+                            emptyDir:
+                              properties:
+                                medium:
+                                  type: string
+                                sizeLimit:
+                                  type: string
+                              type: object
+                            hostPath:
+                              properties:
+                                path:
+                                  type: string
+                                pathType:
+                                  type: string
+                              required:
+                              - path
+                              type: object
+                            persistentVolumeClaim:
+                              properties:
+                                claimName:
+                                  type: string
+                                readOnly:
+                                  type: boolean
+                              required:
+                              - claimName
+                              type: object
+                            secret:
+                              properties:
+                                optional:
+                                  type: boolean
+                                secretName:
+                                  type: string
+                              required:
+                              - secretName
+                              type: object
+                            type:
+                              type: string
+                          type: object
+                        target:
+                          properties:
+                            mountPropagation:
+                              type: string
+                            path:
+                              type: string
+                            readOnly:
+                              type: boolean
+                            subPath:
+                              type: string
+                          type: object
+                      required:
+                      - source
+                      type: object
+                    type: array
                   template:
                     properties:
                       metadata:

@@ -12,9 +12,10 @@ We extended the "jointinferenceservice" section to implement the following featu
 
 - Only cloudWorker or edgeWorker can be deployed separately
 - Multiple Edgeworkers can be deployed at once
-- Add the file field for file mounting
+- Add the file field for backward-compatible file mounting
+- Add the mounts field for explicit file/device mounting
 - Add the log_level field to match logs
-- Mounts the ~/.kube/config of the cluster so that pod can obtain cluster information
+- Keep `DATA_PATH_PREFIX=/home/data` for legacy workers and default mount targets
 - add ServiceConfig to use nodePort mode for communication
 
 
@@ -41,7 +42,13 @@ We assume that you have finished the k8s and kubeedge installation
   SEDNA_ACTION=create bash install.sh
   ```
 
-- yaml example([sedna-modified/build/crd-samples/sedna/jointmultiedgeservice_v1alpha1.yaml at main · dayu-autostreamer/dayu-sedna (github.com)](https://github.com/dayu-autostreamer/dayu-sedna/blob/main/build/crd-samples/sedna/jointmultiedgeservice_v1alpha1.yaml))
+- yaml examples
+
+  legacy-compatible file mounting:
+  [jointmultiedgeservice_v1alpha1.yaml](build/crd-samples/sedna/jointmultiedgeservice_v1alpha1.yaml)
+
+  explicit file/device mounting:
+  [jointmultiedgeservice_mounts_v1alpha1.yaml](build/crd-samples/sedna/jointmultiedgeservice_mounts_v1alpha1.yaml)
 
   ```sh
   kubectl apply -f <yaml-name>
