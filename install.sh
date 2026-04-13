@@ -150,7 +150,7 @@ spec:
       serviceAccountName: sedna
       containers:
       - name: kb
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         image: $REGISTRY/dayuhub/sedna-kb:$SEDNA_VERSION
         env:
           - name: KB_URL
@@ -253,6 +253,7 @@ spec:
       serviceAccountName: sedna
       containers:
       - name: gm
+        imagePullPolicy: Always
         image: $REGISTRY/dayuhub/sedna-gm:$SEDNA_VERSION
         command: ["sedna-gm", "--config", "/config/$config_file_name", "-v2"]
         volumeMounts:
@@ -302,6 +303,7 @@ spec:
     spec:
       containers:
         - name: lc
+          imagePullPolicy: Always
           image: $REGISTRY/dayuhub/sedna-lc:$SEDNA_VERSION
           env:
             - name: GM_ADDRESS
