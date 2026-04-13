@@ -88,7 +88,7 @@ cleanup(){
 
 create_crds() {
   cd ${SEDNA_ROOT}
-  kubectl create -f build/crds
+  kubectl apply -f build/crds
 }
 
 delete_crds() {

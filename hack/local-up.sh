@@ -197,7 +197,7 @@ prepare_k8s_env() {
   # prepare our k8s environment
 
   # create these crds including dataset, model, joint-inference etc.
-  kubectl create -f build/crds/
+  kubectl apply -f build/crds/
 
   kubectl create namespace $NAMESPACE 
 
