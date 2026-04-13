@@ -102,12 +102,17 @@ func mergeVolumesAndMounts(podSpec *v1.PodSpec, volumes []v1.Volume, volumeMount
 
 func renderMount(mount sednav1.Mount, idx int) (renderedMount, error) {
 	volumeName := resolveVolumeName(mount, idx)
-	volume, targetLeaf, readOnly, err := buildVolume(volumeName, mount)
+	sourceType, err := resolveSourceType(mount.Source)
 	if err != nil {
 		return renderedMount{}, err
 	}
 
-	targetPath, err := resolveTargetPath(mount, targetLeaf)
+	volume, targetLeaf, readOnly, err := buildVolume(volumeName, mount, sourceType)
+	if err != nil {
+		return renderedMount{}, err
+	}
+
+	targetPath, err := resolveTargetPath(mount, sourceType, targetLeaf)
 	if err != nil {
 		return renderedMount{}, err
 	}
@@ -153,12 +158,7 @@ func resolveVolumeName(mount sednav1.Mount, idx int) string {
 	return name
 }
 
-func buildVolume(volumeName string, mount sednav1.Mount) (v1.Volume, string, bool, error) {
-	sourceType, err := resolveSourceType(mount.Source)
-	if err != nil {
-		return v1.Volume{}, "", false, err
-	}
-
+func buildVolume(volumeName string, mount sednav1.Mount, sourceType sednav1.MountSourceType) (v1.Volume, string, bool, error) {
 	switch sourceType {
 	case sednav1.MountSourceTypeHostPath:
 		hostPath := mount.Source.HostPath
@@ -166,7 +166,7 @@ func buildVolume(volumeName string, mount sednav1.Mount) (v1.Volume, string, boo
 			return v1.Volume{}, "", false, fmt.Errorf("mount %q requires source.hostPath.path", mount.Name)
 		}
 
-		cleanPath := filepath.Clean(hostPath.Path)
+		cleanPath := resolveHostPathSourcePath(*hostPath)
 		return v1.Volume{
 			Name: volumeName,
 			VolumeSource: v1.VolumeSource{
@@ -284,9 +284,19 @@ func resolveSourceType(source sednav1.MountSource) (sednav1.MountSourceType, err
 	return "", fmt.Errorf("mount source type is ambiguous")
 }
 
-func resolveTargetPath(mount sednav1.Mount, targetLeaf string) (string, error) {
+func resolveTargetPath(mount sednav1.Mount, sourceType sednav1.MountSourceType, targetLeaf string) (string, error) {
 	if mount.Target.Path != "" {
 		return mount.Target.Path, nil
+	}
+
+	if sourceType == sednav1.MountSourceTypeHostPath && mount.Source.HostPath != nil {
+		sourcePath := filepath.Clean(mount.Source.HostPath.Path)
+		if filepath.IsAbs(sourcePath) {
+			return sourcePath, nil
+		}
+
+		targetPath := filepath.Join(dataPathPrefix, sourcePath)
+		return filepath.Clean(targetPath), nil
 	}
 
 	targetLeaf = filepath.Base(filepath.Clean(targetLeaf))
@@ -295,6 +305,19 @@ func resolveTargetPath(mount sednav1.Mount, targetLeaf string) (string, error) {
 	}
 
 	return filepath.Join(dataPathPrefix, targetLeaf), nil
+}
+
+func resolveHostPathSourcePath(hostPath sednav1.HostPathMountSource) string {
+	cleanPath := filepath.Clean(hostPath.Path)
+	if filepath.IsAbs(cleanPath) {
+		return cleanPath
+	}
+
+	if strings.TrimSpace(hostPath.Prefix) == "" {
+		return cleanPath
+	}
+
+	return filepath.Clean(filepath.Join(hostPath.Prefix, cleanPath))
 }
 
 func mergeVolume(podSpec *v1.PodSpec, volume v1.Volume) error {

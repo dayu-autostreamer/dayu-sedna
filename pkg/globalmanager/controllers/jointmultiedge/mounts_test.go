@@ -30,7 +30,7 @@ func TestBuildLegacyFileMountsKeepsOriginalContract(t *testing.T) {
 	}
 }
 
-func TestInjectExplicitMountsDefaultsIntoDataPathPrefix(t *testing.T) {
+func TestInjectExplicitMountsDefaultsAbsoluteHostPathToSamePath(t *testing.T) {
 	podSpec := v1.PodSpec{
 		Containers: []v1.Container{{Name: "main"}},
 	}
@@ -40,7 +40,8 @@ func TestInjectExplicitMountsDefaultsIntoDataPathPrefix(t *testing.T) {
 			Name: "config-file",
 			Source: sednav1.MountSource{
 				HostPath: &sednav1.HostPathMountSource{
-					Path: "/opt/app/config.yaml",
+					Path:   "/opt/app/config.yaml",
+					Prefix: "/ignored/prefix",
 				},
 			},
 			EnvName: "APP_CONFIG",
@@ -53,11 +54,46 @@ func TestInjectExplicitMountsDefaultsIntoDataPathPrefix(t *testing.T) {
 	if len(podSpec.Volumes) != 1 {
 		t.Fatalf("unexpected volume count: got %d want 1", len(podSpec.Volumes))
 	}
-	if got, want := podSpec.Containers[0].VolumeMounts[0].MountPath, "/home/data/config.yaml"; got != want {
+	if got, want := podSpec.Containers[0].VolumeMounts[0].MountPath, "/opt/app/config.yaml"; got != want {
 		t.Fatalf("unexpected mount path: got %q want %q", got, want)
 	}
-	if got, want := podSpec.Containers[0].Env[0].Value, "/home/data/config.yaml"; got != want {
+	if got, want := podSpec.Containers[0].Env[0].Value, "/opt/app/config.yaml"; got != want {
 		t.Fatalf("unexpected env value: got %q want %q", got, want)
+	}
+	if got, want := podSpec.Volumes[0].HostPath.Path, "/opt/app/config.yaml"; got != want {
+		t.Fatalf("unexpected host path: got %q want %q", got, want)
+	}
+}
+
+func TestInjectExplicitMountsDefaultsRelativeHostPathIntoDataPathPrefix(t *testing.T) {
+	podSpec := v1.PodSpec{
+		Containers: []v1.Container{{Name: "main"}},
+	}
+
+	err := injectExplicitMounts(&podSpec, []sednav1.Mount{
+		{
+			Name: "relative-config",
+			Source: sednav1.MountSource{
+				HostPath: &sednav1.HostPathMountSource{
+					Path:   "configs/config.yaml",
+					Prefix: "/mnt/shared",
+				},
+			},
+			EnvName: "APP_CONFIG",
+		},
+	})
+	if err != nil {
+		t.Fatalf("inject mounts failed: %v", err)
+	}
+
+	if got, want := podSpec.Containers[0].VolumeMounts[0].MountPath, "/home/data/configs/config.yaml"; got != want {
+		t.Fatalf("unexpected mount path: got %q want %q", got, want)
+	}
+	if got, want := podSpec.Containers[0].Env[0].Value, "/home/data/configs/config.yaml"; got != want {
+		t.Fatalf("unexpected env value: got %q want %q", got, want)
+	}
+	if got, want := podSpec.Volumes[0].HostPath.Path, "/mnt/shared/configs/config.yaml"; got != want {
+		t.Fatalf("unexpected host path: got %q want %q", got, want)
 	}
 }
 

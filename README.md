@@ -15,7 +15,7 @@ We extended the "jointinferenceservice" section to implement the following featu
 - Add the file field for backward-compatible file mounting
 - Add the mounts field for explicit file/device mounting
 - Add the log_level field to match logs
-- Keep `DATA_PATH_PREFIX=/home/data` for legacy workers and default mount targets
+- Keep `DATA_PATH_PREFIX=/home/data` for legacy workers and relative-path default targets
 - add ServiceConfig to use nodePort mode for communication
 
 
@@ -49,6 +49,11 @@ We assume that you have finished the k8s and kubeedge installation
 
   explicit file/device mounting:
   [jointmultiedgeservice_mounts_v1alpha1.yaml](build/crd-samples/sedna/jointmultiedgeservice_mounts_v1alpha1.yaml)
+
+  when `mounts[].target.path` is omitted:
+  - absolute `source.hostPath.path` keeps the same path inside the container
+  - `source.hostPath.prefix` only applies when `path` is relative, and the real host source becomes `<prefix>/<path>`
+  - relative `source.hostPath.path` is mounted under `DATA_PATH_PREFIX` (`/home/data`)
 
   ```sh
   kubectl apply -f <yaml-name>

@@ -88,6 +88,8 @@ spec:
                               properties:
                                 path:
                                   type: string
+                                prefix:
+                                  type: string
                                 pathType:
                                   type: string
                               required:
@@ -3129,6 +3131,8 @@ spec:
                             hostPath:
                               properties:
                                 path:
+                                  type: string
+                                prefix:
                                   type: string
                                 pathType:
                                   type: string

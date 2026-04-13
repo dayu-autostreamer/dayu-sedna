@@ -124,8 +124,9 @@ type MountSource struct {
 }
 
 type HostPathMountSource struct {
-	Path string           `json:"path"`
-	Type *v1.HostPathType `json:"pathType,omitempty"`
+	Path   string           `json:"path"`
+	Prefix string           `json:"prefix,omitempty"`
+	Type   *v1.HostPathType `json:"pathType,omitempty"`
 }
 
 type PersistentVolumeClaimMountSource struct {

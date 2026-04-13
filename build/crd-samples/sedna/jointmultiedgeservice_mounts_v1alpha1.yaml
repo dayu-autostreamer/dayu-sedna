@@ -26,8 +26,11 @@ spec:
           source:
             type: hostPath
             hostPath:
-              path: /home/nvidia/app/config.yaml
+              prefix: /home/nvidia/app
+              path: configs/config.yaml
               pathType: File
+          # source path on host: /home/nvidia/app/configs/config.yaml
+          # target.path omitted -> mount to /home/data/configs/config.yaml in container
           envName: APP_CONFIG
         - name: model-dir
           source:
