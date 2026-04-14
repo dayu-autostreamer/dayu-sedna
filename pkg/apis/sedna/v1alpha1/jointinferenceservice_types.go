@@ -45,6 +45,7 @@ type JointInferenceServiceSpec struct {
 // EdgeWorker describes the data a edge worker should have
 type EdgeWorker struct {
 	File              ConfFile           `json:"file"`
+	Config            KubeConfig         `json:"kubeConfig,omitempty"`
 	LogLevel          LogLevel           `json:"logLevel"`
 	Mounts            []Mount            `json:"mounts,omitempty"`
 	HardExampleMining HardExampleMining  `json:"hardExampleMining"`
@@ -54,6 +55,7 @@ type EdgeWorker struct {
 // CloudWorker describes the data a cloud worker should have
 type CloudWorker struct {
 	File     ConfFile           `json:"file"`
+	Config   KubeConfig         `json:"kubeConfig,omitempty"`
 	LogLevel LogLevel           `json:"logLevel"`
 	Mounts   []Mount            `json:"mounts,omitempty"`
 	Template v1.PodTemplateSpec `json:"template"`
@@ -68,6 +70,11 @@ type ConfFile struct {
 	// Path keeps backward compatibility with older yaml examples.
 	Path  string   `json:"path,omitempty"`
 	Paths []string `json:"paths,omitempty"`
+}
+
+// KubeConfig describes a host kubeconfig directory that should be mounted into the worker container.
+type KubeConfig struct {
+	Path string `json:"path,omitempty"`
 }
 
 func (in ConfFile) GetPaths() []string {

@@ -37,23 +37,9 @@ type JointMultiEdgeService struct {
 // JointMultiEdgeServiceSpec is a description of a jointinferenceservice
 type JointMultiEdgeServiceSpec struct {
 	// modified: edgeworker -> array of edgeworkers
-	EdgeWorker    []EdgeWorker    `json:"edgeWorker"`
-	CloudWorker   CloudWorker     `json:"cloudWorker"`
-	ServiceConfig ServiceConfig   `json:"serviceConfig"`
-	KubeConfig    *KubeConfigSpec `json:"kubeConfig,omitempty"`
-}
-
-// KubeConfigSpec controls how workers get kubeconfig so they can reach the cluster API.
-// It is disabled by default and only takes effect when explicitly enabled or when a source is provided.
-// Note that hostPath does not support shell expansion like "~", so use an absolute path when you need
-// a host-mounted kubeconfig. Secret-based mounting is preferred because hostPath-based /root/.kube
-// mounting can interfere with KubeEdge edge-pod exec/logs on some environments.
-type KubeConfigSpec struct {
-	Enabled    *bool  `json:"enabled,omitempty"`
-	HostPath   string `json:"hostPath,omitempty"`
-	SecretName string `json:"secretName,omitempty"`
-	SecretKey  string `json:"secretKey,omitempty"`
-	MountPath  string `json:"mountPath,omitempty"`
+	EdgeWorker    []EdgeWorker  `json:"edgeWorker"`
+	CloudWorker   CloudWorker   `json:"cloudWorker"`
+	ServiceConfig ServiceConfig `json:"serviceConfig"`
 }
 
 type ServiceConfig struct {

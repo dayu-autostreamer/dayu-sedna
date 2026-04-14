@@ -51,6 +51,11 @@ spec:
                         items:
                           type: string
                     type: object
+                  kubeConfig:
+                    properties:
+                      path:
+                        type: string
+                    type: object
                   logLevel:
                     description: adjust log level
                     properties:
@@ -7162,6 +7167,11 @@ spec:
                           items:
                             type: string
                       type: object
+                    kubeConfig:
+                      properties:
+                        path:
+                          type: string
+                      type: object
                     logLevel:
                       description: adjust log level
                       properties:
@@ -14259,25 +14269,6 @@ spec:
                   - template
                   type: object
                 type: array
-              kubeConfig:
-                description: controls how workers access kubeconfig so they can reach the cluster API
-                properties:
-                  enabled:
-                    description: disabled by default; enable explicitly when secretName or hostPath should be mounted
-                    type: boolean
-                  hostPath:
-                    description: absolute host directory containing kubeconfig; "~" is not supported and Secret is preferred over hostPath
-                    type: string
-                  mountPath:
-                    description: directory mounted inside the worker container, defaults to /var/run/dayu/kubeconfig
-                    type: string
-                  secretKey:
-                    description: key inside secret that contains kubeconfig, defaults to config
-                    type: string
-                  secretName:
-                    description: secret containing kubeconfig; when set it is used instead of hostPath
-                    type: string
-                type: object
               serviceConfig:
                 description: define service config be like port,targetPort and nodePort
                 properties:

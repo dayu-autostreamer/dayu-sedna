@@ -483,7 +483,7 @@ func (c *Controller) createCloudWorker(service *sednav1.JointMultiEdgeService) e
 	if err := injectExplicitMounts(&deployment.Spec.Template.Spec, cloudWorker.Mounts); err != nil {
 		return err
 	}
-	if err := injectKubeConfig(&deployment.Spec.Template.Spec, service.Spec.KubeConfig); err != nil {
+	if err := injectWorkerKubeConfig(&deployment.Spec.Template.Spec, cloudWorker.Config.Path); err != nil {
 		return err
 	}
 
@@ -558,7 +558,7 @@ func (c *Controller) createEdgeWorker(service *sednav1.JointMultiEdgeService, bi
 		if err := injectExplicitMounts(&deployment.Spec.Template.Spec, edgeWorker.Mounts); err != nil {
 			return err
 		}
-		if err := injectKubeConfig(&deployment.Spec.Template.Spec, service.Spec.KubeConfig); err != nil {
+		if err := injectWorkerKubeConfig(&deployment.Spec.Template.Spec, edgeWorker.Config.Path); err != nil {
 			return err
 		}
 

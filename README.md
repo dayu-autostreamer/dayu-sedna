@@ -14,7 +14,7 @@ We extended the "jointinferenceservice" section to implement the following featu
 - Multiple Edgeworkers can be deployed at once
 - Add the file field for backward-compatible file mounting
 - Add the mounts field for explicit file/device mounting
-- Add optional `spec.kubeConfig` for worker kubeconfig injection, with Secret override support
+- Add worker-level `kubeConfig.path` to follow the upstream `jointmultiedgeservice` kubeconfig style
 - Add the log_level field to match logs
 - Keep `DATA_PATH_PREFIX=/home/data` for legacy workers and relative-path default targets
 - add ServiceConfig to use nodePort mode for communication
@@ -52,11 +52,11 @@ We assume that you have finished the k8s and kubeedge installation
   [jointmultiedgeservice_mounts_v1alpha1.yaml](build/crd-samples/sedna/jointmultiedgeservice_mounts_v1alpha1.yaml)
 
   worker kubeconfig access:
-  - `spec.kubeConfig` is disabled by default
-  - default hostPath mounting of `/root/.kube` was removed because it can interfere with KubeEdge edge-pod `kubectl exec/logs` on some environments
-  - if you still need kubeconfig injection, prefer `spec.kubeConfig.secretName` and place kubeconfig into a Secret key named `config`
-  - `spec.kubeConfig.hostPath` remains available as an explicit opt-in, but `~/.kube` cannot be used directly and hostPath is less safe than Secret
-  - the default mount directory for explicit kubeconfig injection is `/var/run/dayu/kubeconfig`
+  - configure it on each worker: `cloudWorker.kubeConfig.path` or `edgeWorker[].kubeConfig.path`
+  - the value is the host kubeconfig directory, for example `/home/nvidia/.kube`
+  - the controller mounts that directory into the container at `/home/data/.kube`
+  - the controller also injects `KUBECONFIG=/home/data/.kube/config`
+  - this matches the kubeconfig style used in the upstream `sedna-modified` `jointmultiedgeservice` examples
 
   when `mounts[].target.path` is omitted:
   - absolute `source.hostPath.path` keeps the same path inside the container

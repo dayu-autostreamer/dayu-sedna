@@ -7,6 +7,8 @@ spec:
   edgeWorker:
     - file:
         path: /home/nvidia/zwh/Auto-Edge/files/config.yaml
+      kubeConfig:
+        path: /home/nvidia/.kube
       logLevel:
         level: DEBUG
       template:
@@ -27,6 +29,8 @@ spec:
         paths:
           - /home/nvidia/zwh/Auto-Edge/files/config.yaml
           - /home/nvidia/zwh/Auto-Edge/model_lib/model.pt
+      kubeConfig:
+        path: /home/nvidia/.kube
       logLevel:
         level: DEBUG
       template:
@@ -48,6 +52,8 @@ spec:
   cloudWorker:
     file:
       path: /home/hx/zwh/Auto-Edge/model_lib/model.pt
+    kubeConfig:
+      path: /home/hx/.kube
     logLevel:
       level: INFO
     template:

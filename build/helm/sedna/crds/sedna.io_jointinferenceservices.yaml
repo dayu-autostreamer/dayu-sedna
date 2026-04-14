@@ -41,6 +41,11 @@ spec:
                           type: string
                         type: array
                     type: object
+                  kubeConfig:
+                    properties:
+                      path:
+                        type: string
+                    type: object
                   logLevel:
                     properties:
                       level:
@@ -3065,6 +3070,11 @@ spec:
                         items:
                           type: string
                         type: array
+                    type: object
+                  kubeConfig:
+                    properties:
+                      path:
+                        type: string
                     type: object
                   hardExampleMining:
                     properties:

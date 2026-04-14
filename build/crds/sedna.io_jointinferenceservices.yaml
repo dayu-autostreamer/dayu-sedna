@@ -53,6 +53,11 @@ spec:
                           type: string
                         type: array
                     type: object
+                  kubeConfig:
+                    properties:
+                      path:
+                        type: string
+                    type: object
                   logLevel:
                     description: adjust log level
                     properties:
@@ -7170,6 +7175,11 @@ spec:
                         items:
                           type: string
                         type: array
+                    type: object
+                  kubeConfig:
+                    properties:
+                      path:
+                        type: string
                     type: object
                   hardExampleMining:
                     description: HardExampleMining describes the hard example algorithm

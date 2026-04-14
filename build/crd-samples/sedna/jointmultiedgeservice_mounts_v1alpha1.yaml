@@ -8,6 +8,8 @@ spec:
     - file:
         paths:
           - /home/nvidia/legacy/models/model.bin
+      kubeConfig:
+        path: /home/nvidia/.kube
       logLevel:
         level: "DEBUG"
       mounts:

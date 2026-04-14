@@ -17,162 +17,47 @@ limitations under the License.
 package jointmultiedge
 
 import (
-	"fmt"
-	"path/filepath"
 	"strings"
 
 	v1 "k8s.io/api/core/v1"
-
-	sednav1 "github.com/dayu-autostreamer/dayu-sedna/pkg/apis/sedna/v1alpha1"
 )
 
 const (
-	defaultKubeConfigVolumeName = "dayu-kubeconfig"
-	defaultKubeConfigMountPath  = "/var/run/dayu/kubeconfig"
-	defaultKubeConfigSecretKey  = "config"
-	defaultKubeConfigEnvName    = "KUBECONFIG"
+	workerKubeConfigVolumeName = "kubeconfig-volume"
+	workerKubeConfigMountPath  = "/home/data/.kube"
+	workerKubeConfigEnvName    = "KUBECONFIG"
+	workerKubeConfigFilePath   = "/home/data/.kube/config"
 )
 
-type resolvedKubeConfigSpec struct {
-	enabled    bool
-	mountPath  string
-	readOnly   bool
-	volume     v1.Volume
-	configPath string
-}
-
-func injectKubeConfig(podSpec *v1.PodSpec, kubeConfig *sednav1.KubeConfigSpec) error {
-	resolved, err := resolveKubeConfigSpec(kubeConfig)
-	if err != nil {
-		return err
-	}
-	if !resolved.enabled {
+func injectWorkerKubeConfig(podSpec *v1.PodSpec, kubeConfigPath string) error {
+	kubeConfigPath = strings.TrimSpace(kubeConfigPath)
+	if kubeConfigPath == "" {
 		return nil
 	}
 
-	if !podSpecHasMountPath(podSpec, resolved.mountPath) {
-		if err := mergeVolume(podSpec, resolved.volume); err != nil {
-			return err
-		}
-		if err := mergeVolumeMount(podSpec, v1.VolumeMount{
-			Name:      resolved.volume.Name,
-			MountPath: resolved.mountPath,
-			ReadOnly:  resolved.readOnly,
-		}, nil); err != nil {
-			return err
-		}
+	if err := mergeVolumesAndMounts(
+		podSpec,
+		[]v1.Volume{{
+			Name: workerKubeConfigVolumeName,
+			VolumeSource: v1.VolumeSource{
+				HostPath: &v1.HostPathVolumeSource{
+					Path: kubeConfigPath,
+				},
+			},
+		}},
+		[]v1.VolumeMount{{
+			Name:      workerKubeConfigVolumeName,
+			MountPath: workerKubeConfigMountPath,
+		}},
+	); err != nil {
+		return err
 	}
-
-	for idx := range podSpec.Containers {
-		container := &podSpec.Containers[idx]
-		if containerHasEnvVar(container, defaultKubeConfigEnvName) {
-			continue
-		}
-		container.Env = append(container.Env, v1.EnvVar{
-			Name:  defaultKubeConfigEnvName,
-			Value: resolved.configPath,
-		})
+	if err := mergeEnvVar(podSpec, v1.EnvVar{
+		Name:  workerKubeConfigEnvName,
+		Value: workerKubeConfigFilePath,
+	}, nil); err != nil {
+		return err
 	}
 
 	return nil
-}
-
-func resolveKubeConfigSpec(kubeConfig *sednav1.KubeConfigSpec) (resolvedKubeConfigSpec, error) {
-	resolved := resolvedKubeConfigSpec{
-		enabled:    false,
-		mountPath:  defaultKubeConfigMountPath,
-		readOnly:   true,
-		configPath: filepath.Join(defaultKubeConfigMountPath, defaultKubeConfigSecretKey),
-	}
-
-	if kubeConfig == nil {
-		return resolved, nil
-	}
-
-	if kubeConfig.Enabled != nil {
-		resolved.enabled = *kubeConfig.Enabled
-	} else {
-		resolved.enabled = strings.TrimSpace(kubeConfig.SecretName) != "" || strings.TrimSpace(kubeConfig.HostPath) != ""
-	}
-	if !resolved.enabled {
-		return resolved, nil
-	}
-
-	if strings.TrimSpace(kubeConfig.MountPath) != "" {
-		resolved.mountPath = filepath.Clean(kubeConfig.MountPath)
-	}
-	if strings.HasPrefix(resolved.mountPath, "~") || !filepath.IsAbs(resolved.mountPath) {
-		return resolvedKubeConfigSpec{}, fmt.Errorf("kubeConfig.mountPath must be an absolute path")
-	}
-	resolved.configPath = filepath.Join(resolved.mountPath, defaultKubeConfigSecretKey)
-
-	if strings.TrimSpace(kubeConfig.SecretName) != "" {
-		if strings.TrimSpace(kubeConfig.HostPath) != "" {
-			return resolvedKubeConfigSpec{}, fmt.Errorf("kubeConfig.hostPath and kubeConfig.secretName cannot be set together")
-		}
-
-		secretKey := defaultKubeConfigSecretKey
-		if strings.TrimSpace(kubeConfig.SecretKey) != "" {
-			secretKey = strings.TrimSpace(kubeConfig.SecretKey)
-		}
-
-		resolved.volume = v1.Volume{
-			Name: defaultKubeConfigVolumeName,
-			VolumeSource: v1.VolumeSource{
-				Secret: &v1.SecretVolumeSource{
-					SecretName: kubeConfig.SecretName,
-					Items: []v1.KeyToPath{
-						{
-							Key:  secretKey,
-							Path: defaultKubeConfigSecretKey,
-						},
-					},
-				},
-			},
-		}
-		return resolved, nil
-	}
-
-	hostPath := strings.TrimSpace(kubeConfig.HostPath)
-	if hostPath == "" {
-		return resolvedKubeConfigSpec{}, fmt.Errorf("kubeConfig.enabled requires kubeConfig.secretName or kubeConfig.hostPath")
-	}
-	hostPath = filepath.Clean(hostPath)
-	if strings.HasPrefix(hostPath, "~") {
-		return resolvedKubeConfigSpec{}, fmt.Errorf("kubeConfig.hostPath does not support \"~\"; please use an absolute path")
-	}
-	if !filepath.IsAbs(hostPath) {
-		return resolvedKubeConfigSpec{}, fmt.Errorf("kubeConfig.hostPath must be an absolute path")
-	}
-
-	resolved.volume = v1.Volume{
-		Name: defaultKubeConfigVolumeName,
-		VolumeSource: v1.VolumeSource{
-			HostPath: &v1.HostPathVolumeSource{
-				Path: hostPath,
-			},
-		},
-	}
-
-	return resolved, nil
-}
-
-func podSpecHasMountPath(podSpec *v1.PodSpec, mountPath string) bool {
-	for _, container := range podSpec.Containers {
-		for _, volumeMount := range container.VolumeMounts {
-			if volumeMount.MountPath == mountPath {
-				return true
-			}
-		}
-	}
-	return false
-}
-
-func containerHasEnvVar(container *v1.Container, envName string) bool {
-	for _, envVar := range container.Env {
-		if envVar.Name == envName {
-			return true
-		}
-	}
-	return false
 }
