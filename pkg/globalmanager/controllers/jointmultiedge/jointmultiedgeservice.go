@@ -555,6 +555,9 @@ func (c *Controller) createEdgeWorker(service *sednav1.JointMultiEdgeService, bi
 		if err := injectExplicitMounts(&deployment.Spec.Template.Spec, edgeWorker.Mounts); err != nil {
 			return err
 		}
+		if err := injectKubeConfig(&deployment.Spec.Template.Spec, service.Spec.KubeConfig); err != nil {
+			return err
+		}
 
 		_, err := c.kubeClient.AppsV1().Deployments(service.Namespace).Create(context.TODO(), deployment, metav1.CreateOptions{})
 		if err != nil {

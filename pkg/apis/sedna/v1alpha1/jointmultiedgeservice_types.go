@@ -28,25 +28,37 @@ import (
 
 // JointInferenceService describes the data that a jointinferenceservice resource should have
 type JointMultiEdgeService struct {
-	metav1.TypeMeta `json:",inline"`
+	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata"`
-	Spec   JointMultiEdgeServiceSpec   `json:"spec"`
-	Status JointMultiEdgeServiceStatus `json:"status,omitempty"`
+	Spec              JointMultiEdgeServiceSpec   `json:"spec"`
+	Status            JointMultiEdgeServiceStatus `json:"status,omitempty"`
 }
 
 // JointMultiEdgeServiceSpec is a description of a jointinferenceservice
 type JointMultiEdgeServiceSpec struct {
 	// modified: edgeworker -> array of edgeworkers
-	EdgeWorker  []EdgeWorker  `json:"edgeWorker"`
-	CloudWorker CloudWorker `json:"cloudWorker"`
-	ServiceConfig ServiceConfig `json:"serviceConfig"`
+	EdgeWorker    []EdgeWorker    `json:"edgeWorker"`
+	CloudWorker   CloudWorker     `json:"cloudWorker"`
+	ServiceConfig ServiceConfig   `json:"serviceConfig"`
+	KubeConfig    *KubeConfigSpec `json:"kubeConfig,omitempty"`
 }
 
-type ServiceConfig struct{
-	Port int32 `json:"port"`
-	TargetPort int32 `json:"targetPort"`
-	NodePort int32 `json:"nodePort"`
-	Pos string `json:"pos"`
+// KubeConfigSpec controls how edge workers get kubeconfig so they can reach the cluster API.
+// Note that hostPath does not support shell expansion like "~", so use an absolute path such as
+// "/root/.kube" or "/home/nvidia/.kube" when you need a host-mounted kubeconfig.
+type KubeConfigSpec struct {
+	Enabled    *bool  `json:"enabled,omitempty"`
+	HostPath   string `json:"hostPath,omitempty"`
+	SecretName string `json:"secretName,omitempty"`
+	SecretKey  string `json:"secretKey,omitempty"`
+	MountPath  string `json:"mountPath,omitempty"`
+}
+
+type ServiceConfig struct {
+	Port       int32  `json:"port"`
+	TargetPort int32  `json:"targetPort"`
+	NodePort   int32  `json:"nodePort"`
+	Pos        string `json:"pos"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

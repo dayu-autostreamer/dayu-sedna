@@ -14259,6 +14259,25 @@ spec:
                   - template
                   type: object
                 type: array
+              kubeConfig:
+                description: controls how edge workers access kubeconfig so they can reach the cluster API
+                properties:
+                  enabled:
+                    description: defaults to true when omitted
+                    type: boolean
+                  hostPath:
+                    description: absolute host directory containing kubeconfig; "~" is not supported
+                    type: string
+                  mountPath:
+                    description: directory mounted inside the worker container, defaults to /root/.kube
+                    type: string
+                  secretKey:
+                    description: key inside secret that contains kubeconfig, defaults to config
+                    type: string
+                  secretName:
+                    description: secret containing kubeconfig; when set it is used instead of hostPath
+                    type: string
+                type: object
               serviceConfig:
                 description: define service config be like port,targetPort and nodePort
                 properties:
