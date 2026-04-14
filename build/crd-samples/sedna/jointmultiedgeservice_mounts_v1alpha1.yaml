@@ -4,10 +4,6 @@ metadata:
   name: camera-detector
   namespace: auto-edge
 spec:
-  kubeConfig:
-    # "~/.kube" will not be expanded by hostPath, so use an absolute directory on the edge node.
-    hostPath: /home/nvidia/.kube
-    mountPath: /root/.kube
   edgeWorker:
     - file:
         paths:

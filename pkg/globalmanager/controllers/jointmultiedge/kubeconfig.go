@@ -28,8 +28,7 @@ import (
 
 const (
 	defaultKubeConfigVolumeName = "dayu-kubeconfig"
-	defaultKubeConfigHostPath   = "/root/.kube"
-	defaultKubeConfigMountPath  = "/root/.kube"
+	defaultKubeConfigMountPath  = "/var/run/dayu/kubeconfig"
 	defaultKubeConfigSecretKey  = "config"
 	defaultKubeConfigEnvName    = "KUBECONFIG"
 )
@@ -80,20 +79,26 @@ func injectKubeConfig(podSpec *v1.PodSpec, kubeConfig *sednav1.KubeConfigSpec) e
 
 func resolveKubeConfigSpec(kubeConfig *sednav1.KubeConfigSpec) (resolvedKubeConfigSpec, error) {
 	resolved := resolvedKubeConfigSpec{
-		enabled:    true,
+		enabled:    false,
 		mountPath:  defaultKubeConfigMountPath,
 		readOnly:   true,
 		configPath: filepath.Join(defaultKubeConfigMountPath, defaultKubeConfigSecretKey),
 	}
 
-	if kubeConfig != nil && kubeConfig.Enabled != nil {
+	if kubeConfig == nil {
+		return resolved, nil
+	}
+
+	if kubeConfig.Enabled != nil {
 		resolved.enabled = *kubeConfig.Enabled
+	} else {
+		resolved.enabled = strings.TrimSpace(kubeConfig.SecretName) != "" || strings.TrimSpace(kubeConfig.HostPath) != ""
 	}
 	if !resolved.enabled {
 		return resolved, nil
 	}
 
-	if kubeConfig != nil && strings.TrimSpace(kubeConfig.MountPath) != "" {
+	if strings.TrimSpace(kubeConfig.MountPath) != "" {
 		resolved.mountPath = filepath.Clean(kubeConfig.MountPath)
 	}
 	if strings.HasPrefix(resolved.mountPath, "~") || !filepath.IsAbs(resolved.mountPath) {
@@ -101,7 +106,7 @@ func resolveKubeConfigSpec(kubeConfig *sednav1.KubeConfigSpec) (resolvedKubeConf
 	}
 	resolved.configPath = filepath.Join(resolved.mountPath, defaultKubeConfigSecretKey)
 
-	if kubeConfig != nil && strings.TrimSpace(kubeConfig.SecretName) != "" {
+	if strings.TrimSpace(kubeConfig.SecretName) != "" {
 		if strings.TrimSpace(kubeConfig.HostPath) != "" {
 			return resolvedKubeConfigSpec{}, fmt.Errorf("kubeConfig.hostPath and kubeConfig.secretName cannot be set together")
 		}
@@ -128,10 +133,11 @@ func resolveKubeConfigSpec(kubeConfig *sednav1.KubeConfigSpec) (resolvedKubeConf
 		return resolved, nil
 	}
 
-	hostPath := defaultKubeConfigHostPath
-	if kubeConfig != nil && strings.TrimSpace(kubeConfig.HostPath) != "" {
-		hostPath = filepath.Clean(kubeConfig.HostPath)
+	hostPath := strings.TrimSpace(kubeConfig.HostPath)
+	if hostPath == "" {
+		return resolvedKubeConfigSpec{}, fmt.Errorf("kubeConfig.enabled requires kubeConfig.secretName or kubeConfig.hostPath")
 	}
+	hostPath = filepath.Clean(hostPath)
 	if strings.HasPrefix(hostPath, "~") {
 		return resolvedKubeConfigSpec{}, fmt.Errorf("kubeConfig.hostPath does not support \"~\"; please use an absolute path")
 	}

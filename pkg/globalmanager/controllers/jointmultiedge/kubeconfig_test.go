@@ -25,7 +25,7 @@ import (
 	sednav1 "github.com/dayu-autostreamer/dayu-sedna/pkg/apis/sedna/v1alpha1"
 )
 
-func TestInjectKubeConfigDefaultsToRootKubeDir(t *testing.T) {
+func TestInjectKubeConfigDisabledByDefault(t *testing.T) {
 	podSpec := v1.PodSpec{
 		Containers: []v1.Container{{Name: "main"}},
 	}
@@ -34,20 +34,14 @@ func TestInjectKubeConfigDefaultsToRootKubeDir(t *testing.T) {
 		t.Fatalf("inject kubeconfig failed: %v", err)
 	}
 
-	if got, want := len(podSpec.Volumes), 1; got != want {
+	if got, want := len(podSpec.Volumes), 0; got != want {
 		t.Fatalf("unexpected volume count: got %d want %d", got, want)
 	}
-	if got, want := podSpec.Volumes[0].HostPath.Path, "/root/.kube"; got != want {
-		t.Fatalf("unexpected host path: got %q want %q", got, want)
+	if got, want := len(podSpec.Containers[0].VolumeMounts), 0; got != want {
+		t.Fatalf("unexpected mount count: got %d want %d", got, want)
 	}
-	if got, want := podSpec.Containers[0].VolumeMounts[0].MountPath, "/root/.kube"; got != want {
-		t.Fatalf("unexpected mount path: got %q want %q", got, want)
-	}
-	if got, want := podSpec.Containers[0].Env[0].Name, "KUBECONFIG"; got != want {
-		t.Fatalf("unexpected env name: got %q want %q", got, want)
-	}
-	if got, want := podSpec.Containers[0].Env[0].Value, "/root/.kube/config"; got != want {
-		t.Fatalf("unexpected env value: got %q want %q", got, want)
+	if got, want := len(podSpec.Containers[0].Env), 0; got != want {
+		t.Fatalf("unexpected env count: got %d want %d", got, want)
 	}
 }
 
@@ -97,6 +91,23 @@ func TestInjectKubeConfigRejectsTildeHostPath(t *testing.T) {
 		t.Fatalf("expected hostPath validation error")
 	}
 	if !strings.Contains(err.Error(), "does not support") {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+func TestInjectKubeConfigRejectsEnabledWithoutSource(t *testing.T) {
+	podSpec := v1.PodSpec{
+		Containers: []v1.Container{{Name: "main"}},
+	}
+
+	enabled := true
+	err := injectKubeConfig(&podSpec, &sednav1.KubeConfigSpec{
+		Enabled: &enabled,
+	})
+	if err == nil {
+		t.Fatalf("expected validation error")
+	}
+	if !strings.Contains(err.Error(), "requires kubeConfig.secretName or kubeConfig.hostPath") {
 		t.Fatalf("unexpected error: %v", err)
 	}
 }
