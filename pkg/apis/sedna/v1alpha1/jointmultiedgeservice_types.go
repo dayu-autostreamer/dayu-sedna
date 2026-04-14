@@ -43,7 +43,7 @@ type JointMultiEdgeServiceSpec struct {
 	KubeConfig    *KubeConfigSpec `json:"kubeConfig,omitempty"`
 }
 
-// KubeConfigSpec controls how edge workers get kubeconfig so they can reach the cluster API.
+// KubeConfigSpec controls how workers get kubeconfig so they can reach the cluster API.
 // Note that hostPath does not support shell expansion like "~", so use an absolute path such as
 // "/root/.kube" or "/home/nvidia/.kube" when you need a host-mounted kubeconfig.
 type KubeConfigSpec struct {

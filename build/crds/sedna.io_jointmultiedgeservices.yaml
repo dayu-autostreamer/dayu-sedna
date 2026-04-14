@@ -14260,7 +14260,7 @@ spec:
                   type: object
                 type: array
               kubeConfig:
-                description: controls how edge workers access kubeconfig so they can reach the cluster API
+                description: controls how workers access kubeconfig so they can reach the cluster API
                 properties:
                   enabled:
                     description: defaults to true when omitted
