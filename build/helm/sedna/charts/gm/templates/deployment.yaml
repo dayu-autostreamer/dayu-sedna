@@ -25,7 +25,7 @@ spec:
       serviceAccountName: sedna
       containers:
       - name: gm
-        image: {{ .Values.image }}
+        image: {{ if .Values.global.runtimeService.enabled }}{{ required "global.runtimeService.gmImage is required when RuntimeService is enabled" .Values.global.runtimeService.gmImage }}{{ else }}{{ .Values.image }}{{ end }}
         command: ["sedna-gm", "--config", "/config/gm.yaml", "-v2"]
         volumeMounts:
         - name: gm-config

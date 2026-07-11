@@ -23,11 +23,12 @@ import (
 	il "github.com/dayu-autostreamer/dayu-sedna/pkg/globalmanager/controllers/incrementallearning"
 	ji "github.com/dayu-autostreamer/dayu-sedna/pkg/globalmanager/controllers/jointinference"
 	// DONE: mulji路径
-	// mulji 
+	// mulji
 	mulji "github.com/dayu-autostreamer/dayu-sedna/pkg/globalmanager/controllers/jointmultiedge"
 	ll "github.com/dayu-autostreamer/dayu-sedna/pkg/globalmanager/controllers/lifelonglearning"
 	objs "github.com/dayu-autostreamer/dayu-sedna/pkg/globalmanager/controllers/objectsearch"
 	reid "github.com/dayu-autostreamer/dayu-sedna/pkg/globalmanager/controllers/reid"
+	rts "github.com/dayu-autostreamer/dayu-sedna/pkg/globalmanager/controllers/runtimeservice"
 	va "github.com/dayu-autostreamer/dayu-sedna/pkg/globalmanager/controllers/videoanalytics"
 	"github.com/dayu-autostreamer/dayu-sedna/pkg/globalmanager/runtime"
 )
@@ -38,9 +39,9 @@ type Registry map[string]FeatureFactory
 
 func NewRegistry() Registry {
 	return Registry{
-		ji.Name:      ji.New,
+		ji.Name: ji.New,
 		// DONE:
-		mulji.Name:	  mulji.New,
+		mulji.Name:   mulji.New,
 		fe.Name:      fe.New,
 		fl.Name:      fl.New,
 		il.Name:      il.New,
@@ -49,5 +50,6 @@ func NewRegistry() Registry {
 		va.Name:      va.New,
 		dataset.Name: dataset.New,
 		objs.Name:    objs.New,
+		rts.Name:     rts.New,
 	}
 }

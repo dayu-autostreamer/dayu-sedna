@@ -55,6 +55,8 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		&JointInferenceServiceList{},
 		&JointMultiEdgeService{},
 		&JointMultiEdgeServiceList{},
+		&RuntimeService{},
+		&RuntimeServiceList{},
 		&FeatureExtractionService{},
 		&FeatureExtractionServiceList{},
 		&FederatedLearningJob{},

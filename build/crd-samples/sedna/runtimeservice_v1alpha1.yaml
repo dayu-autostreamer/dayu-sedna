@@ -1,0 +1,25 @@
+apiVersion: sedna.io/v1alpha1
+kind: RuntimeService
+metadata:
+  name: processor-edge-node-r1
+  namespace: default
+spec:
+  installID: dayu
+  deploymentRevision: 1
+  component: processor
+  logicalService: object-detection
+  targetNode: edge-node-name
+  podTemplate:
+    metadata:
+      labels:
+        app: dayu-runtime-example
+    spec:
+      containers:
+      - name: runtime
+        image: nginx:1.25-alpine
+        ports:
+        - name: runtime
+          containerPort: 8080
+          protocol: TCP
+  endpoint:
+    port: 8080

@@ -40,4 +40,6 @@ type ObjectTrackingServiceExpansion interface{}
 
 type ReidJobExpansion interface{}
 
+type RuntimeServiceExpansion interface{}
+
 type VideoAnalyticsJobExpansion interface{}

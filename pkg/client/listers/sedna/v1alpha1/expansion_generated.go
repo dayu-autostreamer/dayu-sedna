@@ -106,6 +106,14 @@ type ReidJobListerExpansion interface{}
 // ReidJobNamespaceLister.
 type ReidJobNamespaceListerExpansion interface{}
 
+// RuntimeServiceListerExpansion allows custom methods to be added to
+// RuntimeServiceLister.
+type RuntimeServiceListerExpansion interface{}
+
+// RuntimeServiceNamespaceListerExpansion allows custom methods to be added to
+// RuntimeServiceNamespaceLister.
+type RuntimeServiceNamespaceListerExpansion interface{}
+
 // VideoAnalyticsJobListerExpansion allows custom methods to be added to
 // VideoAnalyticsJobLister.
 type VideoAnalyticsJobListerExpansion interface{}

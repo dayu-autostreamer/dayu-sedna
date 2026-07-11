@@ -37,6 +37,7 @@ import (
 	"github.com/dayu-autostreamer/dayu-sedna/pkg/localcontroller/managers/jointmultiedge"
 	"github.com/dayu-autostreamer/dayu-sedna/pkg/localcontroller/managers/lifelonglearning"
 	"github.com/dayu-autostreamer/dayu-sedna/pkg/localcontroller/managers/model"
+	runtimeservice "github.com/dayu-autostreamer/dayu-sedna/pkg/localcontroller/managers/runtimeservice"
 	"github.com/dayu-autostreamer/dayu-sedna/pkg/localcontroller/server"
 	"github.com/dayu-autostreamer/dayu-sedna/pkg/version/verflag"
 )
@@ -101,6 +102,8 @@ func runServer() {
 
 	jmm := jointmultiedge.New(c)
 
+	rsm := runtimeservice.New(c, Options.NodeName)
+
 	fm := federatedlearning.New(c)
 
 	im := incrementallearning.New(c, dm, mm, Options)
@@ -110,7 +113,7 @@ func runServer() {
 	s := server.New(Options)
 
 	for _, m := range []managers.FeatureManager{
-		dm, mm, jm, jmm, fm, im, lm,
+		dm, mm, jm, jmm, rsm, fm, im, lm,
 	} {
 		s.AddFeatureManager(m)
 		c.Subscribe(m)

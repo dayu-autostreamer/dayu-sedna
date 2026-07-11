@@ -11,6 +11,8 @@ rules:
     - datasets
     - models
     - jointinferenceservices
+    - jointmultiedgeservices
+    - runtimeservices
     - federatedlearningjobs
     - incrementallearningjobs
     - lifelonglearningjobs
@@ -29,6 +31,8 @@ rules:
     - datasets/status
     - models/status
     - jointinferenceservices/status
+    - jointmultiedgeservices/status
+    - runtimeservices/status
     - federatedlearningjobs/status
     - incrementallearningjobs/status
     - lifelonglearningjobs/status
@@ -58,6 +62,7 @@ rules:
     - get
     - list
     - watch
+    - update
     - delete
 
   - apiGroups:
@@ -75,9 +80,28 @@ rules:
   - apiGroups:
     - ""
     resources:
+    - services
+    verbs:
+    - watch
+    - update
+
+  - apiGroups:
+    - ""
+    resources:
+    - endpoints
+    verbs:
+    - get
+    - list
+    - watch
+
+  - apiGroups:
+    - ""
+    resources:
     - nodes
     verbs:
     - get
+    - list
+    - watch
 
   - apiGroups:
     - ""

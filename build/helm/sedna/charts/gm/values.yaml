@@ -1,3 +1,8 @@
+global:
+  runtimeService:
+    enabled: false
+    gmImage: ""
+
 image: kubeedge/sedna-gm:v0.4.3
 resources:
   requests:

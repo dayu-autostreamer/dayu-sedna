@@ -42,6 +42,7 @@ Sedna can simply enable edge-cloud synergy capabilities to existing training and
     proposals/lifelong-learning
     proposals/object-search
     proposals/object-tracking
+    RuntimeService managed runtime contract <runtime-service>
 
 
 .. toctree::

@@ -12,6 +12,7 @@ rules:
     - models
     - jointinferenceservices
     - jointmultiedgeservices
+    - runtimeservices
     - featureextractionservices
     - federatedlearningjobs
     - incrementallearningjobs
@@ -34,6 +35,7 @@ rules:
     - models/status
     - jointinferenceservices/status
     - jointmultiedgeservices/status
+    - runtimeservices/status
     - federatedlearningjobs/status
     - featureextractionservices/status
     - incrementallearningjobs/status
@@ -86,10 +88,28 @@ rules:
   - apiGroups:
     - ""
     resources:
+    - services
+    verbs:
+    - watch
+    - update
+
+  - apiGroups:
+    - ""
+    resources:
+    - endpoints
+    verbs:
+    - get
+    - list
+    - watch
+
+  - apiGroups:
+    - ""
+    resources:
     - nodes
     verbs:
     - get
     - list
+    - watch
 
   - apiGroups:
     - ""

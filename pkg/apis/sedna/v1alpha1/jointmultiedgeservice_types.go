@@ -23,30 +23,30 @@ import (
 
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-// +kubebuilder:resource:shortName=ji
+// +kubebuilder:resource:shortName=mulji
 // +kubebuilder:subresource:status
 
 // JointInferenceService describes the data that a jointinferenceservice resource should have
 type JointMultiEdgeService struct {
-	metav1.TypeMeta `json:",inline"`
+	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata"`
-	Spec   JointMultiEdgeServiceSpec   `json:"spec"`
-	Status JointMultiEdgeServiceStatus `json:"status,omitempty"`
+	Spec              JointMultiEdgeServiceSpec   `json:"spec"`
+	Status            JointMultiEdgeServiceStatus `json:"status,omitempty"`
 }
 
 // JointMultiEdgeServiceSpec is a description of a jointinferenceservice
 type JointMultiEdgeServiceSpec struct {
 	// modified: edgeworker -> array of edgeworkers
-	EdgeWorker  []EdgeWorker  `json:"edgeWorker"`
-	CloudWorker CloudWorker `json:"cloudWorker"`
+	EdgeWorker    []EdgeWorker  `json:"edgeWorker"`
+	CloudWorker   CloudWorker   `json:"cloudWorker"`
 	ServiceConfig ServiceConfig `json:"serviceConfig"`
 }
 
-type ServiceConfig struct{
-	Port int32 `json:"port"`
-	TargetPort int32 `json:"targetPort"`
-	NodePort int32 `json:"nodePort"`
-	Pos string `json:"pos"`
+type ServiceConfig struct {
+	Port       int32  `json:"port"`
+	TargetPort int32  `json:"targetPort"`
+	NodePort   int32  `json:"nodePort"`
+	Pos        string `json:"pos"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

@@ -44,8 +44,9 @@ type ChannelContext struct {
 
 	// downstream map
 	// nodeName => queue
-	nodeQueue sync.Map
-	nodeStore sync.Map
+	nodeQueue    sync.Map
+	nodeStore    sync.Map
+	downstreamMu sync.Mutex // makes same-key store replacement/removal atomic
 }
 
 var (
@@ -99,12 +100,19 @@ func getNodeStore(nodeName string) cache.Store {
 
 // SendToEdge sends the msg to nodeName
 func SendToEdge(nodeName string, msg *model.Message) error {
+	s := getNodeStore(nodeName)
+	context.downstreamMu.Lock()
+	if err := s.Add(msg); err != nil {
+		context.downstreamMu.Unlock()
+		return err
+	}
+	context.downstreamMu.Unlock()
+	// Publish the queue key only after its value is visible in the store. The
+	// writer is allowed to run immediately after Add.
 	q := getNodeQueue(nodeName)
 	key, _ := getMsgKey(msg)
 	q.Add(key)
-
-	s := getNodeStore(nodeName)
-	return s.Add(msg)
+	return nil
 }
 
 // ReceiveFromEdge receives a message from edge
@@ -182,7 +190,14 @@ func AddNode(nodeName string, read ReadMsgFunc, write WriteMsgFunc, closeCh chan
 				break
 			}
 			klog.Infof("write key %s to node %s successfully", key, nodeName)
-			_ = s.Delete(msg)
+			// A same-key update may have replaced msg while write was blocked. Only
+			// remove the exact object that was written; workqueue dirty processing
+			// will then deliver the replacement.
+			context.downstreamMu.Lock()
+			if current, exists, _ := s.GetByKey(key.(string)); exists && current == obj {
+				_ = s.Delete(msg)
+			}
+			context.downstreamMu.Unlock()
 			q.Forget(key)
 			q.Done(key)
 		}

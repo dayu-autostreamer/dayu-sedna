@@ -39,6 +39,7 @@ type SednaV1alpha1Interface interface {
 	ObjectSearchServicesGetter
 	ObjectTrackingServicesGetter
 	ReidJobsGetter
+	RuntimeServicesGetter
 	VideoAnalyticsJobsGetter
 }
 
@@ -89,6 +90,10 @@ func (c *SednaV1alpha1Client) ObjectTrackingServices(namespace string) ObjectTra
 
 func (c *SednaV1alpha1Client) ReidJobs(namespace string) ReidJobInterface {
 	return newReidJobs(c, namespace)
+}
+
+func (c *SednaV1alpha1Client) RuntimeServices(namespace string) RuntimeServiceInterface {
+	return newRuntimeServices(c, namespace)
 }
 
 func (c *SednaV1alpha1Client) VideoAnalyticsJobs(namespace string) VideoAnalyticsJobInterface {

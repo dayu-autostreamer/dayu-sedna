@@ -90,6 +90,14 @@ type UpstreamHandler = func(namespace, name, operation string, content []byte) e
 // UpstreamHandlerAddFunc defines the upstream controller register function for adding handler
 type UpstreamHandlerAddFunc = func(kind string, updateHandler UpstreamHandler) error
 
+// SourceAwareUpstreamHandler preserves the node identity declared on the
+// websocket connection for controllers whose status protocol depends on a
+// specific node.
+type SourceAwareUpstreamHandler = func(sourceNode, name, namespace, operation string, content []byte) error
+
+// SourceAwareUpstreamHandlerAddFunc registers a node-aware upstream handler.
+type SourceAwareUpstreamHandlerAddFunc = func(kind string, updateHandler SourceAwareUpstreamHandler) error
+
 // DownstreamSendFunc is the send function for feature controllers to sync the resource updates(spec and status) to LC
 type DownstreamSendFunc = func(nodeName string, eventType watch.EventType, obj interface{}) error
 
@@ -107,6 +115,12 @@ type FeatureControllerI interface {
 
 	// SetUpstreamHandler sets up the upstream handler function for the feature controller
 	SetUpstreamHandler(add UpstreamHandlerAddFunc) error
+}
+
+// SourceAwareFeatureControllerI is an optional extension. Existing feature
+// controllers keep the legacy handler contract unchanged.
+type SourceAwareFeatureControllerI interface {
+	SetSourceAwareUpstreamHandler(add SourceAwareUpstreamHandlerAddFunc) error
 }
 
 // ControllerContext defines the context that all feature controller share and belong to

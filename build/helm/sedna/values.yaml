@@ -1,3 +1,11 @@
+global:
+  runtimeService:
+    # This is an install-profile guard, not a controller feature gate. Enabling
+    # it selects explicit fork-built images and fails rendering if either is absent.
+    enabled: false
+    gmImage: ""
+    lcImage: ""
+
 kb:
   image: kubeedge/sedna-kb:v0.4.3
   resources:
@@ -8,6 +16,7 @@ kb:
       memory: 512Mi
 
 gm:
+  # Legacy/default image. The managed profile uses global.runtimeService.gmImage.
   image: kubeedge/sedna-gm:v0.4.3
   resources:
     requests:
@@ -28,6 +37,7 @@ gm:
     server: http://kb.sedna:9020
 
 lc:
+  # Legacy/default image. The managed profile uses global.runtimeService.lcImage.
   image: kubeedge/sedna-lc:v0.4.3
   resources:
     requests:

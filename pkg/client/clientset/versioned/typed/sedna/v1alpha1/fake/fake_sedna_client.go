@@ -72,6 +72,10 @@ func (c *FakeSednaV1alpha1) ReidJobs(namespace string) v1alpha1.ReidJobInterface
 	return &FakeReidJobs{c, namespace}
 }
 
+func (c *FakeSednaV1alpha1) RuntimeServices(namespace string) v1alpha1.RuntimeServiceInterface {
+	return &FakeRuntimeServices{c, namespace}
+}
+
 func (c *FakeSednaV1alpha1) VideoAnalyticsJobs(namespace string) v1alpha1.VideoAnalyticsJobInterface {
 	return &FakeVideoAnalyticsJobs{c, namespace}
 }

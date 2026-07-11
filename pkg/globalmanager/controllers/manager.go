@@ -105,8 +105,18 @@ func (m *Manager) Start() error {
 		if err != nil {
 			return fmt.Errorf("failed to initialize controller %s: %v", name, err)
 		}
-		f.SetDownstreamSendFunc(downstreamSendFunc)
-		f.SetUpstreamHandler(uc.Add)
+		if err := f.SetDownstreamSendFunc(downstreamSendFunc); err != nil {
+			return fmt.Errorf("failed to configure downstream handler for controller %s: %v", name, err)
+		}
+		if sourceAware, ok := f.(runtime.SourceAwareFeatureControllerI); ok {
+			if err := sourceAware.SetSourceAwareUpstreamHandler(uc.AddSourceAware); err != nil {
+				return fmt.Errorf("failed to configure source-aware upstream handler for controller %s: %v", name, err)
+			}
+		} else {
+			if err := f.SetUpstreamHandler(uc.Add); err != nil {
+				return fmt.Errorf("failed to configure upstream handler for controller %s: %v", name, err)
+			}
+		}
 
 		klog.Infof("initialized controller %s", name)
 		go f.Run(stopCh)

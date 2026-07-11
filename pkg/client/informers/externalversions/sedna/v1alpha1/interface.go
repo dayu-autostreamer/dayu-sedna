@@ -46,6 +46,8 @@ type Interface interface {
 	ObjectTrackingServices() ObjectTrackingServiceInformer
 	// ReidJobs returns a ReidJobInformer.
 	ReidJobs() ReidJobInformer
+	// RuntimeServices returns a RuntimeServiceInformer.
+	RuntimeServices() RuntimeServiceInformer
 	// VideoAnalyticsJobs returns a VideoAnalyticsJobInformer.
 	VideoAnalyticsJobs() VideoAnalyticsJobInformer
 }
@@ -114,6 +116,11 @@ func (v *version) ObjectTrackingServices() ObjectTrackingServiceInformer {
 // ReidJobs returns a ReidJobInformer.
 func (v *version) ReidJobs() ReidJobInformer {
 	return &reidJobInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+}
+
+// RuntimeServices returns a RuntimeServiceInformer.
+func (v *version) RuntimeServices() RuntimeServiceInformer {
+	return &runtimeServiceInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }
 
 // VideoAnalyticsJobs returns a VideoAnalyticsJobInformer.

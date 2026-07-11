@@ -75,6 +75,8 @@ func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Sedna().V1alpha1().ObjectTrackingServices().Informer()}, nil
 	case v1alpha1.SchemeGroupVersion.WithResource("reidjobs"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Sedna().V1alpha1().ReidJobs().Informer()}, nil
+	case v1alpha1.SchemeGroupVersion.WithResource("runtimeservices"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Sedna().V1alpha1().RuntimeServices().Informer()}, nil
 	case v1alpha1.SchemeGroupVersion.WithResource("videoanalyticsjobs"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Sedna().V1alpha1().VideoAnalyticsJobs().Informer()}, nil
 

@@ -16,17 +16,32 @@
 
 # Influential env vars:
 #
-# SEDNA_ACTION    | optional | 'create'/'clean', default is 'create'
+# SEDNA_ACTION    | optional | 'create'/'delete', default is 'create'
 # SEDNA_VERSION   | optional | The Sedna version to be installed.
 #                              if not specified, it will get latest release version.
 # SEDNA_ROOT      | optional | The Sedna offline directory
+# SEDNA_MANIFEST_REPO | optional | GitHub repo containing this fork's CRDs/RBAC
+# SEDNA_MANIFEST_REF  | optional | Git ref in SEDNA_MANIFEST_REPO, default is 'main'
+# SEDNA_ENABLE_RUNTIME_SERVICE | optional | 'true' selects the managed install
+#                              profile and requires explicit GM/LC images.
+# SEDNA_GM_IMAGE  | optional | Exact GM image. Required for RuntimeService when
+#                              the default upstream image does not contain this fork.
+# SEDNA_LC_IMAGE  | optional | Exact LC image. Required for RuntimeService when
+#                              the default upstream image does not contain this fork.
+# SEDNA_KB_IMAGE  | optional | Exact KB image.
 
 set -o errexit
 set -o nounset
 set -o pipefail
 
-TMP_DIR=$(mktemp -d --suffix=.sedna)
+TMP_DIR=$(mktemp -d "${TMPDIR:-/tmp}/sedna.XXXXXX")
 SEDNA_ROOT=${SEDNA_ROOT:-$TMP_DIR}
+SEDNA_MANIFEST_REPO=${SEDNA_MANIFEST_REPO:-dayu-autostreamer/dayu-sedna}
+SEDNA_MANIFEST_REF=${SEDNA_MANIFEST_REF:-main}
+SEDNA_RELEASE_REPO=${SEDNA_RELEASE_REPO:-kubeedge/sedna}
+SEDNA_ENABLE_RUNTIME_SERVICE=${SEDNA_ENABLE_RUNTIME_SERVICE:-false}
+_SEDNA_EXPLICIT_GM_IMAGE=${SEDNA_GM_IMAGE:-}
+_SEDNA_EXPLICIT_LC_IMAGE=${SEDNA_LC_IMAGE:-}
 
 DEFAULT_SEDNA_VERSION=v0.4.0
 
@@ -35,7 +50,7 @@ trap "rm -rf '$TMP_DIR'" EXIT
 
 get_latest_version() {
   # get Sedna latest release version
-  local repo=kubeedge/sedna
+  local repo=$SEDNA_RELEASE_REPO
   # output of this latest page:
   # ...
   # "tag_name": "v1.0.0",
@@ -46,9 +61,6 @@ get_latest_version() {
     sed 's/[",]//g'
   } || echo $DEFAULT_SEDNA_VERSION # fallback
 }
-
-: ${SEDNA_VERSION:=$(get_latest_version)}
-SEDNA_VERSION=v${SEDNA_VERSION#v}
 
 _download_yamls() {
 
@@ -61,7 +73,7 @@ _download_yamls() {
 
     echo downloading $yaml into ${SEDNA_ROOT}/$yaml_dir
     local try_times=30 i=1 timeout=2
-    while ! timeout ${timeout}s curl -sSO https://raw.githubusercontent.com/kubeedge/sedna/main/$yaml_dir/$yaml; do
+    while ! timeout ${timeout}s curl -fsSO https://raw.githubusercontent.com/${SEDNA_MANIFEST_REPO}/${SEDNA_MANIFEST_REF}/$yaml_dir/$yaml; do
       ((++i>try_times)) && {
         echo timeout to download $yaml
         exit 2
@@ -74,11 +86,18 @@ _download_yamls() {
 download_yamls() {
   yaml_files=(
   sedna.io_datasets.yaml
+  sedna.io_featureextractionservices.yaml
   sedna.io_federatedlearningjobs.yaml
   sedna.io_incrementallearningjobs.yaml
   sedna.io_jointinferenceservices.yaml
+  sedna.io_jointmultiedgeservices.yaml
   sedna.io_lifelonglearningjobs.yaml
   sedna.io_models.yaml
+  sedna.io_objectsearchservices.yaml
+  sedna.io_objecttrackingservices.yaml
+  sedna.io_reidjobs.yaml
+  sedna.io_runtimeservices.yaml
+  sedna.io_videoanalyticsjobs.yaml
   )
   _download_yamls build/crds
   yaml_files=(
@@ -169,7 +188,7 @@ spec:
       containers:
       - name: kb
         imagePullPolicy: IfNotPresent
-        image: kubeedge/sedna-kb:$SEDNA_VERSION
+        image: $SEDNA_KB_IMAGE
         env:
           - name: KB_URL
             value: "sqlite:///db/kb.sqlite3"
@@ -271,7 +290,7 @@ spec:
       serviceAccountName: sedna
       containers:
       - name: gm
-        image: kubeedge/sedna-gm:$SEDNA_VERSION
+        image: $SEDNA_GM_IMAGE
         command: ["sedna-gm", "--config", "/config/$config_file_name", "-v2"]
         volumeMounts:
         - name: gm-config
@@ -320,7 +339,7 @@ spec:
     spec:
       containers:
         - name: lc
-          image: kubeedge/sedna-lc:$SEDNA_VERSION
+          image: $SEDNA_LC_IMAGE
           env:
             - name: GM_ADDRESS
               value: $GM_ADDRESS
@@ -385,9 +404,28 @@ check_action() {
   
 }
 
+check_runtime_service_profile() {
+  case "$SEDNA_ENABLE_RUNTIME_SERVICE" in
+    true|false)
+      ;;
+    *)
+      echo "SEDNA_ENABLE_RUNTIME_SERVICE must be 'true' or 'false'." >&2
+      exit 2
+      ;;
+  esac
+
+  if [ "$action" = create ] && [ "$SEDNA_ENABLE_RUNTIME_SERVICE" = true ]; then
+    if [ -z "$_SEDNA_EXPLICIT_GM_IMAGE" ] || [ -z "$_SEDNA_EXPLICIT_LC_IMAGE" ]; then
+      echo "RuntimeService install profile requires explicit SEDNA_GM_IMAGE and SEDNA_LC_IMAGE built from this source revision." >&2
+      exit 2
+    fi
+  fi
+}
+
 do_check() {
   check_kubectl
   check_action
+  check_runtime_service_profile
 }
 
 show_debug_infos() {
@@ -411,6 +449,14 @@ red_text() {
 }
 
 do_check
+
+if [ "$action" = create ]; then
+  : ${SEDNA_VERSION:=$(get_latest_version)}
+  SEDNA_VERSION=v${SEDNA_VERSION#v}
+  SEDNA_KB_IMAGE=${SEDNA_KB_IMAGE:-kubeedge/sedna-kb:$SEDNA_VERSION}
+  SEDNA_GM_IMAGE=${SEDNA_GM_IMAGE:-kubeedge/sedna-gm:$SEDNA_VERSION}
+  SEDNA_LC_IMAGE=${SEDNA_LC_IMAGE:-kubeedge/sedna-lc:$SEDNA_VERSION}
+fi
 
 prepare
 case "$action" in

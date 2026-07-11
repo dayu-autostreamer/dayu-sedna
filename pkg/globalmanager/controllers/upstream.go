@@ -28,8 +28,9 @@ import (
 
 // UpstreamController subscribes the updates from edge and syncs to k8s api server
 type UpstreamController struct {
-	messageLayer   messagelayer.MessageLayer
-	updateHandlers map[string]runtime.UpstreamHandler
+	messageLayer        messagelayer.MessageLayer
+	updateHandlers      map[string]runtime.UpstreamHandler
+	sourceAwareHandlers map[string]runtime.SourceAwareUpstreamHandler
 }
 
 func (uc *UpstreamController) checkOperation(operation string) error {
@@ -64,8 +65,12 @@ func (uc *UpstreamController) syncEdgeUpdate() {
 		name := update.Name
 		operation := update.Operation
 
-		handler, ok := uc.updateHandlers[kind]
-		if ok {
+		if handler, ok := uc.sourceAwareHandlers[kind]; ok {
+			err := handler(update.SourceNode, name, namespace, operation, update.Content)
+			if err != nil {
+				klog.Errorf("Error to handle %s %s/%s operation(%s) from node %s: %+v", kind, namespace, name, operation, update.SourceNode, err)
+			}
+		} else if handler, ok := uc.updateHandlers[kind]; ok {
 			err := handler(name, namespace, operation, update.Content)
 			if err != nil {
 				klog.Errorf("Error to handle %s %s/%s operation(%s): %+v", kind, namespace, name, operation, err)
@@ -86,7 +91,7 @@ func (uc *UpstreamController) Run(stopCh <-chan struct{}) {
 
 func (uc *UpstreamController) Add(kind string, handler runtime.UpstreamHandler) error {
 	kind = strings.ToLower(kind)
-	if _, ok := uc.updateHandlers[kind]; ok {
+	if _, ok := uc.updateHandlers[kind]; ok || uc.sourceAwareHandlers[kind] != nil {
 		return fmt.Errorf("a upstream handler for kind %s already exists", kind)
 	}
 	uc.updateHandlers[kind] = handler
@@ -94,11 +99,24 @@ func (uc *UpstreamController) Add(kind string, handler runtime.UpstreamHandler) 
 	return nil
 }
 
+// AddSourceAware registers a handler which receives the node identity declared
+// when the LC websocket connection was established, alongside the resource
+// header and payload.
+func (uc *UpstreamController) AddSourceAware(kind string, handler runtime.SourceAwareUpstreamHandler) error {
+	kind = strings.ToLower(kind)
+	if _, ok := uc.sourceAwareHandlers[kind]; ok || uc.updateHandlers[kind] != nil {
+		return fmt.Errorf("an upstream handler for kind %s already exists", kind)
+	}
+	uc.sourceAwareHandlers[kind] = handler
+	return nil
+}
+
 // NewUpstreamController creates a new Upstream controller from config
 func NewUpstreamController(cc *runtime.ControllerContext) (*UpstreamController, error) {
 	uc := &UpstreamController{
-		messageLayer:   messagelayer.NewContextMessageLayer(),
-		updateHandlers: make(map[string]runtime.UpstreamHandler),
+		messageLayer:        messagelayer.NewContextMessageLayer(),
+		updateHandlers:      make(map[string]runtime.UpstreamHandler),
+		sourceAwareHandlers: make(map[string]runtime.SourceAwareUpstreamHandler),
 	}
 
 	return uc, nil

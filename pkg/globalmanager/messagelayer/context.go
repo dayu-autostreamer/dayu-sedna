@@ -42,11 +42,12 @@ type ContextMessageLayer struct {
 
 // ResourceUpdateSpec describes the resource update from upstream
 type ResourceUpdateSpec struct {
-	Kind      string
-	Namespace string
-	Name      string
-	Operation string
-	Content   []byte
+	SourceNode string
+	Kind       string
+	Namespace  string
+	Name       string
+	Operation  string
+	Content    []byte
 }
 
 // SendResourceObject message to the node with resource object and event type
@@ -107,11 +108,12 @@ func (cml *ContextMessageLayer) ReceiveResourceUpdate() (*ResourceUpdateSpec, er
 	content := msg.Content
 
 	return &ResourceUpdateSpec{
-		Kind:      kind,
-		Namespace: namespace,
-		Name:      name,
-		Operation: operation,
-		Content:   content,
+		SourceNode: nodeName,
+		Kind:       kind,
+		Namespace:  namespace,
+		Name:       name,
+		Operation:  operation,
+		Content:    content,
 	}, nil
 }
 

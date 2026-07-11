@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: lc
-          image: kubeedge/sedna-lc:v0.4.3
+          image: {{ if .Values.global.runtimeService.enabled }}{{ required "global.runtimeService.lcImage is required when RuntimeService is enabled" .Values.global.runtimeService.lcImage }}{{ else }}{{ .Values.image }}{{ end }}
           env:
             - name: GM_ADDRESS
               value: gm.sedna:9000

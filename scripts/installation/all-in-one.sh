@@ -35,6 +35,12 @@
 #                                    if not specified, it try to get latest version or v1.8.0
 # SEDNA_VERSION         | optional | The Sedna version to be installed.
 #                                    if not specified, it will get latest release or v0.4.1
+# SEDNA_MANIFEST_REPO   | optional | GitHub repo containing this fork's install manifests
+# SEDNA_MANIFEST_REF    | optional | Git ref in SEDNA_MANIFEST_REPO, default 'main'
+# SEDNA_ENABLE_RUNTIME_SERVICE | optional | 'true' requires explicit fork GM/LC images
+# SEDNA_GM_IMAGE        | optional | Exact GM image (set to use RuntimeService)
+# SEDNA_LC_IMAGE        | optional | Exact LC image (set to use RuntimeService)
+# SEDNA_KB_IMAGE        | optional | Exact KB image
 # CLUSTER_NAME          | optional | The all-in-one cluster name, default 'sedna-mini'
 # NO_INSTALL_SEDNA      | optional | If 'false', install Sedna, else no install, default false.
 # FORCE_INSTALL_SEDNA   | optional | If 'true', force reinstall Sedna, default false.
@@ -53,6 +59,23 @@ DEFAULT_NODE_IMAGE_VERSION=v1.21.1
 
 function prepare_env() {
   : ${CLUSTER_NAME:=sedna-mini}
+  : ${SEDNA_MANIFEST_REPO:=dayu-autostreamer/dayu-sedna}
+  : ${SEDNA_MANIFEST_REF:=main}
+  : ${SEDNA_RELEASE_REPO:=kubeedge/sedna}
+  : ${SEDNA_ENABLE_RUNTIME_SERVICE:=false}
+
+  case "$SEDNA_ENABLE_RUNTIME_SERVICE" in
+    true|false)
+      ;;
+    *)
+      log_fault "SEDNA_ENABLE_RUNTIME_SERVICE must be 'true' or 'false'."
+      ;;
+  esac
+  if [ "$action" = create ] && [ "$SEDNA_ENABLE_RUNTIME_SERVICE" = true ]; then
+    if [ -z "${SEDNA_GM_IMAGE:-}" ] || [ -z "${SEDNA_LC_IMAGE:-}" ]; then
+      log_fault "RuntimeService install profile requires explicit SEDNA_GM_IMAGE and SEDNA_LC_IMAGE built from this source revision."
+    fi
+  fi
 
   # here not use := because it ignore the error of get_latest_version command
   if [ -z "${KUBEEDGE_VERSION:-}" ]; then
@@ -63,7 +86,7 @@ function prepare_env() {
   KUBEEDGE_VERSION=v${KUBEEDGE_VERSION#v}
 
   if [ -z "${SEDNA_VERSION:-}" ]; then
-    SEDNA_VERSION=$(get_latest_version kubeedge/sedna $DEFAULT_SEDNA_VERSION)
+    SEDNA_VERSION=$(get_latest_version $SEDNA_RELEASE_REPO $DEFAULT_SEDNA_VERSION)
   fi
   SEDNA_VERSION=v${SEDNA_VERSION#v}
 
@@ -579,6 +602,26 @@ function clean_edge() {
   clean_edgenodes
 }
 
+function run_sedna_installer() {
+  local action=$1
+  local installer_url=https://raw.githubusercontent.com/${SEDNA_MANIFEST_REPO}/${SEDNA_MANIFEST_REF}/scripts/installation/install.sh
+  local sedna_env=(
+    "SEDNA_ACTION=$action"
+    "SEDNA_VERSION=$SEDNA_VERSION"
+    "SEDNA_MANIFEST_REPO=$SEDNA_MANIFEST_REPO"
+    "SEDNA_MANIFEST_REF=$SEDNA_MANIFEST_REF"
+    "SEDNA_RELEASE_REPO=$SEDNA_RELEASE_REPO"
+    "SEDNA_ENABLE_RUNTIME_SERVICE=$SEDNA_ENABLE_RUNTIME_SERVICE"
+  )
+
+  [ -n "${SEDNA_GM_IMAGE:-}" ] && sedna_env+=("SEDNA_GM_IMAGE=$SEDNA_GM_IMAGE")
+  [ -n "${SEDNA_LC_IMAGE:-}" ] && sedna_env+=("SEDNA_LC_IMAGE=$SEDNA_LC_IMAGE")
+  [ -n "${SEDNA_KB_IMAGE:-}" ] && sedna_env+=("SEDNA_KB_IMAGE=$SEDNA_KB_IMAGE")
+
+  run_in_control_plane env "${sedna_env[@]}" bash -ec \
+    "curl --fail --silent --show-error --location '$installer_url' | bash -"
+}
+
 function install_sedna() {
   if [[ "$NO_INSTALL_SEDNA" != "false" ]]; then
     return
@@ -591,16 +634,12 @@ function install_sedna() {
       log_info
       return
     fi
-    run_in_control_plane bash -ec "
-    curl https://raw.githubusercontent.com/kubeedge/sedna/main/scripts/installation/install.sh | SEDNA_ACTION=clean SEDNA_VERSION=$SEDNA_VERSION bash -
-  "
+    run_sedna_installer delete
   fi
 
   log_info "Installing Sedna Control Components..."
 
-  run_in_control_plane bash -ec "
-    curl https://raw.githubusercontent.com/kubeedge/sedna/main/scripts/installation/install.sh | SEDNA_ACTION=create SEDNA_VERSION=$SEDNA_VERSION bash -
-  "
+  run_sedna_installer create
 }
 
 function get_latest_version() {
@@ -678,9 +717,9 @@ function ensure_tools() {
 }
 
 function main() {
-  ensure_tools
-  prepare_env
   action=${1-create}
+  prepare_env
+  ensure_tools
 
   case "$action" in
     create)
