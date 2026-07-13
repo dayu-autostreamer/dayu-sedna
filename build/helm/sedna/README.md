@@ -5,8 +5,8 @@ Visit https://github.com/dayu-autostreamer/dayu-sedna for more information.
 ## Install
 
 ```
-$ git clone https://github.com/dayu-autostreamer/dayu-sedna.git
-$ cd sedna
+$ git clone --branch v1.1 https://github.com/dayu-autostreamer/dayu-sedna.git
+$ cd dayu-sedna
 $ helm install sedna ./build/helm/sedna
 ```
 
@@ -18,8 +18,8 @@ references:
 ```
 $ helm install sedna ./build/helm/sedna \
     --set global.runtimeService.enabled=true \
-    --set-string global.runtimeService.gmImage=registry.example.com/dayu/sedna-gm:runtime-v1 \
-    --set-string global.runtimeService.lcImage=registry.example.com/dayu/sedna-lc:runtime-v1
+    --set-string global.runtimeService.gmImage=dayuhub/sedna-gm:v1.1 \
+    --set-string global.runtimeService.lcImage=dayuhub/sedna-lc:v1.1
 ```
 
 The managed profile fails rendering unless both explicit images are provided.

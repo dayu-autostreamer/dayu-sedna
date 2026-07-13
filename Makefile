@@ -25,7 +25,7 @@ IMAGE_REPO ?= $(REGISTRY)/dayuhub
 PLATFORMS ?= linux/amd64,linux/arm64
 COMPONENTS ?= gm lc kb
 
-IMAGE_TAG ?= v1.0
+IMAGE_TAG ?= v1.1
 GO_LDFLAGS ?= ""
 
 # set allowDangerousTypes for allowing float

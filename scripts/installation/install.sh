@@ -21,7 +21,7 @@
 #                              if not specified, it will get latest release version.
 # SEDNA_ROOT      | optional | The Sedna offline directory
 # SEDNA_MANIFEST_REPO | optional | GitHub repo containing this fork's CRDs/RBAC
-# SEDNA_MANIFEST_REF  | optional | Git ref in SEDNA_MANIFEST_REPO, default is 'main'
+# SEDNA_MANIFEST_REF  | optional | Git ref in SEDNA_MANIFEST_REPO, default is 'v1.1'
 # SEDNA_ENABLE_RUNTIME_SERVICE | optional | 'true' selects the managed install
 #                              profile and requires explicit GM/LC images.
 # SEDNA_GM_IMAGE  | optional | Exact GM image. Required for RuntimeService when
@@ -37,7 +37,7 @@ set -o pipefail
 TMP_DIR=$(mktemp -d "${TMPDIR:-/tmp}/sedna.XXXXXX")
 SEDNA_ROOT=${SEDNA_ROOT:-$TMP_DIR}
 SEDNA_MANIFEST_REPO=${SEDNA_MANIFEST_REPO:-dayu-autostreamer/dayu-sedna}
-SEDNA_MANIFEST_REF=${SEDNA_MANIFEST_REF:-main}
+SEDNA_MANIFEST_REF=${SEDNA_MANIFEST_REF:-v1.1}
 SEDNA_RELEASE_REPO=${SEDNA_RELEASE_REPO:-kubeedge/sedna}
 SEDNA_ENABLE_RUNTIME_SERVICE=${SEDNA_ENABLE_RUNTIME_SERVICE:-false}
 _SEDNA_EXPLICIT_GM_IMAGE=${SEDNA_GM_IMAGE:-}

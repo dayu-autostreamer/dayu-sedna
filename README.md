@@ -4,6 +4,10 @@
 
 This project is based on Sedna(https://github.com/kubeedge/sedna).
 
+The current Dayu Sedna version is [`v1.1`](https://github.com/dayu-autostreamer/dayu-sedna/tree/v1.1).
+The legacy `v1.0` baseline and the managed-runtime changes in `v1.1` are documented in the
+[changelog](CHANGELOG.md).
+
 We added the `JointMultiEdgeService` API for the legacy Dayu deployment path and
 the additive `RuntimeService` API for revision-scoped, cache-driven managed
 runtimes. JMES and its NodePort behavior remain supported.
@@ -35,13 +39,13 @@ We assume that you have finished the k8s and kubeedge installation
 - git clone
 
   ```sh
-  git clone https://github.com/dayu-autostreamer/dayu-sedna.git
+  git clone --branch v1.1 https://github.com/dayu-autostreamer/dayu-sedna.git
   ```
 
 - install sedna
 
   ```sh
-  curl -LO https://raw.githubusercontent.com/dayu-autostreamer/dayu-sedna/main/scripts/installation/install.sh
+  curl -LO https://raw.githubusercontent.com/dayu-autostreamer/dayu-sedna/v1.1/scripts/installation/install.sh
   ```
 
   The default images preserve the upstream Sedna/JMES installation. For the
@@ -51,8 +55,8 @@ We assume that you have finished the k8s and kubeedge installation
   ```sh
   SEDNA_ACTION=create \
   SEDNA_ENABLE_RUNTIME_SERVICE=true \
-  SEDNA_GM_IMAGE=registry.example.com/dayu/sedna-gm:runtime-v1 \
-  SEDNA_LC_IMAGE=registry.example.com/dayu/sedna-lc:runtime-v1 \
+  SEDNA_GM_IMAGE=dayuhub/sedna-gm:v1.1 \
+  SEDNA_LC_IMAGE=dayuhub/sedna-lc:v1.1 \
   bash install.sh
   ```
 
@@ -96,7 +100,7 @@ We assume that you have finished the k8s and kubeedge installation
 
 clone repository
 ```bash
-git clone https://github.com/dayu-autostreamer/dayu-sedna
+git clone --branch v1.1 https://github.com/dayu-autostreamer/dayu-sedna
 ```
 
 set meta information of building
@@ -108,11 +112,11 @@ vim hack/resource/driver_opts.toml
 
 # set docker meta info
 # default REG is docker.io
-# default REPO is dayuhub
-# default TAG is v1.0
+# default IMAGE_REPO is $(REG)/dayuhub
+# default IMAGE_TAG is v1.1
 export REG=xxx
-export REPO=xxx
-export TAG=xxx
+export IMAGE_REPO=xxx
+export IMAGE_TAG=v1.1
 ```
 
 build gm/lc/kb image
