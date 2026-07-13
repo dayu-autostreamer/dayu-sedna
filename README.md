@@ -48,23 +48,9 @@ We assume that you have finished the k8s and kubeedge installation
   curl -LO https://raw.githubusercontent.com/dayu-autostreamer/dayu-sedna/v1.1/scripts/installation/install.sh
   ```
 
-  The default images preserve the upstream Sedna/JMES installation. For the
-  managed `RuntimeService` path, first publish GM and LC images built from this
-  source revision, then pass their exact references without editing the script:
-
   ```sh
-  SEDNA_ACTION=create \
-  SEDNA_ENABLE_RUNTIME_SERVICE=true \
-  SEDNA_GM_IMAGE=dayuhub/sedna-gm:v1.1 \
-  SEDNA_LC_IMAGE=dayuhub/sedna-lc:v1.1 \
-  bash install.sh
+  SEDNA_ACTION=create bash install.sh
   ```
-
-  `SEDNA_ENABLE_RUNTIME_SERVICE=true` is a fail-fast install profile: it requires
-  both images instead of silently pairing the RuntimeService CRD with old
-  binaries. `SEDNA_MANIFEST_REPO` and `SEDNA_MANIFEST_REF` select the matching
-  manifests; `SEDNA_KB_IMAGE` is optional. Omitting the profile keeps the legacy
-  path operational but does not add RuntimeService support to old binaries.
 
 - yaml examples
 
