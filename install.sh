@@ -28,7 +28,7 @@ set -o pipefail
 TMP_DIR='.'
 SEDNA_ROOT='.'
 
-SEDNA_VERSION=v1.0
+SEDNA_VERSION=v1.1
 
 REGISTRY=${REG:-docker.io}
 
