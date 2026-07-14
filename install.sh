@@ -17,16 +17,13 @@
 # Influential env vars:
 #
 # SEDNA_ACTION    | optional | 'create'/'delete', default is 'create'
-# SEDNA_VERSION   | optional | The Sedna version to be installed.
-#                              if not specified, it will get latest release version.
 # SEDNA_ROOT      | optional | Directory containing install.sh and build resources.
 #                              Defaults to this script's repository/bundle root.
-# SEDNA_ENABLE_RUNTIME_SERVICE | optional | 'true' selects the managed install
-#                              profile and requires explicit GM/LC images.
-# SEDNA_GM_IMAGE  | optional | Exact GM image. Required for RuntimeService when
-#                              the default upstream image does not contain this fork.
-# SEDNA_LC_IMAGE  | optional | Exact LC image. Required for RuntimeService when
-#                              the default upstream image does not contain this fork.
+# REG             | optional | Registry hosting the dayuhub images, default 'docker.io'.
+# SEDNA_IMAGE_REPO | optional | Complete Dayu-Sedna image repository.
+#                              Defaults to '<REG>/dayuhub'.
+# SEDNA_GM_IMAGE  | optional | Exact Dayu-Sedna GM image override.
+# SEDNA_LC_IMAGE  | optional | Exact Dayu-Sedna LC image override.
 # SEDNA_KB_IMAGE  | optional | Exact KB image.
 
 # This repository-root file is the complete, canonical installer. Keep
@@ -47,29 +44,21 @@ fi
 SCRIPT_DIR=$(cd "$(dirname "$SCRIPT_SOURCE")" && pwd)
 TMP_DIR=$(mktemp -d "${TMPDIR:-/tmp}/sedna.XXXXXX")
 SEDNA_ROOT=${SEDNA_ROOT:-$SCRIPT_DIR}
-SEDNA_RELEASE_REPO=${SEDNA_RELEASE_REPO:-kubeedge/sedna}
-SEDNA_ENABLE_RUNTIME_SERVICE=${SEDNA_ENABLE_RUNTIME_SERVICE:-false}
-_SEDNA_EXPLICIT_GM_IMAGE=${SEDNA_GM_IMAGE:-}
-_SEDNA_EXPLICIT_LC_IMAGE=${SEDNA_LC_IMAGE:-}
-
-DEFAULT_SEDNA_VERSION=v0.4.0
+DAYU_SEDNA_VERSION=v1.1
+REQUESTED_SEDNA_VERSION=${SEDNA_VERSION:-}
+SEDNA_VERSION=$DAYU_SEDNA_VERSION
+if [ -n "$REQUESTED_SEDNA_VERSION" ] && [ "v${REQUESTED_SEDNA_VERSION#v}" != "$DAYU_SEDNA_VERSION" ]; then
+  echo "Ignoring SEDNA_VERSION=$REQUESTED_SEDNA_VERSION; this installer is pinned to Dayu-Sedna $DAYU_SEDNA_VERSION." >&2
+fi
+REGISTRY=${REG:-docker.io}
+SEDNA_IMAGE_REPO=${SEDNA_IMAGE_REPO:-${REGISTRY%/}/dayuhub}
+SEDNA_IMAGE_REPO=${SEDNA_IMAGE_REPO%/}
+SEDNA_KB_IMAGE=${SEDNA_KB_IMAGE:-$SEDNA_IMAGE_REPO/sedna-kb:$SEDNA_VERSION}
+SEDNA_GM_IMAGE=${SEDNA_GM_IMAGE:-$SEDNA_IMAGE_REPO/sedna-gm:$SEDNA_VERSION}
+SEDNA_LC_IMAGE=${SEDNA_LC_IMAGE:-$SEDNA_IMAGE_REPO/sedna-lc:$SEDNA_VERSION}
 
 
 trap "rm -rf '$TMP_DIR'" EXIT
-
-get_latest_version() {
-  # get Sedna latest release version
-  local repo=$SEDNA_RELEASE_REPO
-  # output of this latest page:
-  # ...
-  # "tag_name": "v1.0.0",
-  # ...
-  {
-    curl -s https://api.github.com/repos/$repo/releases/latest |
-    awk '/"tag_name":/&&$0=$2' |
-    sed 's/[",]//g'
-  } || echo $DEFAULT_SEDNA_VERSION # fallback
-}
 
 required_install_resources=(
   build/crds/sedna.io_datasets.yaml
@@ -284,6 +273,7 @@ spec:
       serviceAccountName: sedna
       containers:
       - name: gm
+        imagePullPolicy: IfNotPresent
         image: $SEDNA_GM_IMAGE
         command: ["sedna-gm", "--config", "/config/$config_file_name", "-v2"]
         volumeMounts:
@@ -333,6 +323,7 @@ spec:
     spec:
       containers:
         - name: lc
+          imagePullPolicy: IfNotPresent
           image: $SEDNA_LC_IMAGE
           env:
             - name: GM_ADDRESS
@@ -398,33 +389,29 @@ check_action() {
 
 }
 
-check_runtime_service_profile() {
-  case "$SEDNA_ENABLE_RUNTIME_SERVICE" in
-    true|false)
-      ;;
-    *)
-      echo "SEDNA_ENABLE_RUNTIME_SERVICE must be 'true' or 'false'." >&2
-      exit 2
-      ;;
-  esac
+check_dayu_images() {
+  [ "$action" = create ] || return
 
-  if [ "$action" = create ] && [ "$SEDNA_ENABLE_RUNTIME_SERVICE" = true ]; then
-    if [ -z "$_SEDNA_EXPLICIT_GM_IMAGE" ] || [ -z "$_SEDNA_EXPLICIT_LC_IMAGE" ]; then
-      echo "RuntimeService install profile requires explicit SEDNA_GM_IMAGE and SEDNA_LC_IMAGE built from this source revision." >&2
+  local component image_variable image
+  for component in KB GM LC; do
+    image_variable="SEDNA_${component}_IMAGE"
+    image=${!image_variable}
+    if [ -z "$image" ]; then
+      echo "$image_variable must not be empty." >&2
       exit 2
     fi
-  fi
+  done
 }
 
 do_check() {
-  check_kubectl
   check_action
-  check_runtime_service_profile
+  check_dayu_images
+  check_kubectl
 }
 
 show_debug_infos() {
   cat - <<EOF
-Sedna is $(green_text running):
+Dayu-Sedna $SEDNA_VERSION is $(green_text running):
 See GM status: kubectl -n sedna get deploy
 See LC status: kubectl -n sedna get ds lc
 See Pod status: kubectl -n sedna get pod
@@ -445,17 +432,12 @@ red_text() {
 validate_install_resources
 do_check
 
-if [ "$action" = create ]; then
-  : ${SEDNA_VERSION:=$(get_latest_version)}
-  SEDNA_VERSION=v${SEDNA_VERSION#v}
-  SEDNA_KB_IMAGE=${SEDNA_KB_IMAGE:-kubeedge/sedna-kb:$SEDNA_VERSION}
-  SEDNA_GM_IMAGE=${SEDNA_GM_IMAGE:-kubeedge/sedna-gm:$SEDNA_VERSION}
-  SEDNA_LC_IMAGE=${SEDNA_LC_IMAGE:-kubeedge/sedna-lc:$SEDNA_VERSION}
-fi
-
 case "$action" in
   create)
-    echo "Installing Sedna $SEDNA_VERSION..."
+    echo "Installing Dayu-Sedna $SEDNA_VERSION..."
+    echo "  KB image: $SEDNA_KB_IMAGE"
+    echo "  GM image: $SEDNA_GM_IMAGE"
+    echo "  LC image: $SEDNA_LC_IMAGE"
     prepare_install
     create_crds
     create_kb
@@ -473,6 +455,6 @@ case "$action" in
     delete_lc
     delete_crds
     cleanup
-    echo "$(green_text Sedna is uninstalled successfully)"
+    echo "$(green_text Dayu-Sedna is uninstalled successfully)"
     ;;
 esac
