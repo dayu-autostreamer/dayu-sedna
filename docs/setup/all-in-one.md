@@ -15,7 +15,7 @@ It requires you:
 For example: 
 
   ```bash
-  curl https://raw.githubusercontent.com/dayu-autostreamer/dayu-sedna/v1.1/scripts/installation/all-in-one.sh | KUBEEDGE_VERSION=v1.8.0 NUM_EDGE_NODES=2 bash -
+  curl https://raw.githubusercontent.com/dayu-autostreamer/dayu-sedna/main/scripts/installation/all-in-one.sh | KUBEEDGE_VERSION=v1.8.0 NUM_EDGE_NODES=2 bash -
   ```
 
 Above command installs a mini Sedna environment, including:
@@ -31,8 +31,8 @@ Advanced options:
 |NUM_EDGE_NODES     | Number of KubeEdge nodes| 1 |
 |NUM_CLOUD_WORKER_NODES    | Number of cloud **worker** nodes, not master node| 0|
 |SEDNA_VERSION    | The Sedna version to be installed. |The latest version|
-|SEDNA_MANIFEST_REPO | Repository containing install manifests. |dayu-autostreamer/dayu-sedna|
-|SEDNA_MANIFEST_REF | Branch, tag, or commit containing the root installer and install manifests. |main|
+|SEDNA_MANIFEST_REPO | Repository downloaded as the complete versioned install bundle. |dayu-autostreamer/dayu-sedna|
+|SEDNA_MANIFEST_REF | Branch, tag, or commit downloaded atomically with the root installer, CRDs, and RBAC. |main|
 |SEDNA_ENABLE_RUNTIME_SERVICE | Fail-fast managed profile; requires explicit GM and LC images. |false|
 |SEDNA_GM_IMAGE | Exact GM image; set to an image built from this fork for RuntimeService. |upstream image for `SEDNA_VERSION`|
 |SEDNA_LC_IMAGE | Exact LC image; set to an image built from this fork for RuntimeService. |upstream image for `SEDNA_VERSION`|
@@ -45,5 +45,5 @@ Advanced options:
 
 Clean all-in-one Sedna:  
   ```bash
-  curl https://raw.githubusercontent.com/dayu-autostreamer/dayu-sedna/v1.1/scripts/installation/all-in-one.sh | bash /dev/stdin clean
+  curl https://raw.githubusercontent.com/dayu-autostreamer/dayu-sedna/main/scripts/installation/all-in-one.sh | bash /dev/stdin clean
   ```

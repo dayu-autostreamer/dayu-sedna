@@ -35,8 +35,8 @@
 #                                    if not specified, it try to get latest version or v1.8.0
 # SEDNA_VERSION         | optional | The Sedna version to be installed.
 #                                    if not specified, it will get latest release or v0.4.1
-# SEDNA_MANIFEST_REPO   | optional | GitHub repo containing this fork's install manifests
-# SEDNA_MANIFEST_REF    | optional | Git ref in SEDNA_MANIFEST_REPO, default 'main'
+# SEDNA_MANIFEST_REPO   | optional | GitHub repo containing the versioned install bundle
+# SEDNA_MANIFEST_REF    | optional | Git ref downloaded as one source bundle, default 'main'
 # SEDNA_ENABLE_RUNTIME_SERVICE | optional | 'true' requires explicit fork GM/LC images
 # SEDNA_GM_IMAGE        | optional | Exact GM image (set to use RuntimeService)
 # SEDNA_LC_IMAGE        | optional | Exact LC image (set to use RuntimeService)
@@ -604,12 +604,10 @@ function clean_edge() {
 
 function run_sedna_installer() {
   local action=$1
-  local installer_url=https://raw.githubusercontent.com/${SEDNA_MANIFEST_REPO}/${SEDNA_MANIFEST_REF}/install.sh
+  local bundle_url=https://github.com/${SEDNA_MANIFEST_REPO}/archive/${SEDNA_MANIFEST_REF}.tar.gz
   local sedna_env=(
     "SEDNA_ACTION=$action"
     "SEDNA_VERSION=$SEDNA_VERSION"
-    "SEDNA_MANIFEST_REPO=$SEDNA_MANIFEST_REPO"
-    "SEDNA_MANIFEST_REF=$SEDNA_MANIFEST_REF"
     "SEDNA_RELEASE_REPO=$SEDNA_RELEASE_REPO"
     "SEDNA_ENABLE_RUNTIME_SERVICE=$SEDNA_ENABLE_RUNTIME_SERVICE"
   )
@@ -618,8 +616,15 @@ function run_sedna_installer() {
   [ -n "${SEDNA_LC_IMAGE:-}" ] && sedna_env+=("SEDNA_LC_IMAGE=$SEDNA_LC_IMAGE")
   [ -n "${SEDNA_KB_IMAGE:-}" ] && sedna_env+=("SEDNA_KB_IMAGE=$SEDNA_KB_IMAGE")
 
-  run_in_control_plane env "${sedna_env[@]}" bash -ec \
-    "curl --fail --silent --show-error --location '$installer_url' | bash -"
+  run_in_control_plane env "${sedna_env[@]}" bash -ec '
+    set -o pipefail
+    bundle_url=$1
+    bundle_dir=$(mktemp -d)
+    trap "rm -rf \"$bundle_dir\"" EXIT
+    curl --fail --silent --show-error --location "$bundle_url" |
+      tar -xz -C "$bundle_dir" --strip-components=1
+    bash "$bundle_dir/install.sh"
+  ' _ "$bundle_url"
 }
 
 function install_sedna() {

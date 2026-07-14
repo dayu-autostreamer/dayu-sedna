@@ -19,9 +19,8 @@
 # SEDNA_ACTION    | optional | 'create'/'delete', default is 'create'
 # SEDNA_VERSION   | optional | The Sedna version to be installed.
 #                              if not specified, it will get latest release version.
-# SEDNA_ROOT      | optional | The Sedna offline directory
-# SEDNA_MANIFEST_REPO | optional | GitHub repo containing this fork's CRDs/RBAC
-# SEDNA_MANIFEST_REF  | optional | Git ref in SEDNA_MANIFEST_REPO, default is 'v1.1'
+# SEDNA_ROOT      | optional | Directory containing install.sh and build resources.
+#                              Defaults to this script's repository/bundle root.
 # SEDNA_ENABLE_RUNTIME_SERVICE | optional | 'true' selects the managed install
 #                              profile and requires explicit GM/LC images.
 # SEDNA_GM_IMAGE  | optional | Exact GM image. Required for RuntimeService when
@@ -38,10 +37,16 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+SCRIPT_SOURCE=${BASH_SOURCE[0]:-}
+if [ -z "$SCRIPT_SOURCE" ] || [ "$SCRIPT_SOURCE" = "-" ] || [ ! -f "$SCRIPT_SOURCE" ]; then
+  echo "install.sh must be executed from a Dayu-Sedna checkout or release bundle." >&2
+  echo "Downloading or piping the script alone is not supported because the version-matched CRD and RBAC resources are required." >&2
+  exit 2
+fi
+
+SCRIPT_DIR=$(cd "$(dirname "$SCRIPT_SOURCE")" && pwd)
 TMP_DIR=$(mktemp -d "${TMPDIR:-/tmp}/sedna.XXXXXX")
-SEDNA_ROOT=${SEDNA_ROOT:-$TMP_DIR}
-SEDNA_MANIFEST_REPO=${SEDNA_MANIFEST_REPO:-dayu-autostreamer/dayu-sedna}
-SEDNA_MANIFEST_REF=${SEDNA_MANIFEST_REF:-v1.1}
+SEDNA_ROOT=${SEDNA_ROOT:-$SCRIPT_DIR}
 SEDNA_RELEASE_REPO=${SEDNA_RELEASE_REPO:-kubeedge/sedna}
 SEDNA_ENABLE_RUNTIME_SERVICE=${SEDNA_ENABLE_RUNTIME_SERVICE:-false}
 _SEDNA_EXPLICIT_GM_IMAGE=${SEDNA_GM_IMAGE:-}
@@ -66,48 +71,42 @@ get_latest_version() {
   } || echo $DEFAULT_SEDNA_VERSION # fallback
 }
 
-_download_yamls() {
+required_install_resources=(
+  build/crds/sedna.io_datasets.yaml
+  build/crds/sedna.io_featureextractionservices.yaml
+  build/crds/sedna.io_federatedlearningjobs.yaml
+  build/crds/sedna.io_incrementallearningjobs.yaml
+  build/crds/sedna.io_jointinferenceservices.yaml
+  build/crds/sedna.io_jointmultiedgeservices.yaml
+  build/crds/sedna.io_lifelonglearningjobs.yaml
+  build/crds/sedna.io_models.yaml
+  build/crds/sedna.io_objectsearchservices.yaml
+  build/crds/sedna.io_objecttrackingservices.yaml
+  build/crds/sedna.io_reidjobs.yaml
+  build/crds/sedna.io_runtimeservices.yaml
+  build/crds/sedna.io_videoanalyticsjobs.yaml
+  build/gm/rbac/gm.yaml
+)
 
-  yaml_dir=$1
-  mkdir -p ${SEDNA_ROOT}/$yaml_dir
-  cd ${SEDNA_ROOT}/$yaml_dir
-  for yaml in ${yaml_files[@]}; do
-    # the yaml file already exists, no need to download
-    [ -e "$yaml" ] && continue
+validate_install_resources() {
+  local resource missing=0
+  if [ ! -d "$SEDNA_ROOT" ]; then
+    echo "install resource root does not exist: $SEDNA_ROOT" >&2
+    exit 2
+  fi
+  SEDNA_ROOT=$(cd "$SEDNA_ROOT" && pwd)
 
-    echo downloading $yaml into ${SEDNA_ROOT}/$yaml_dir
-    local try_times=30 i=1 timeout=2
-    while ! timeout ${timeout}s curl -fsSO https://raw.githubusercontent.com/${SEDNA_MANIFEST_REPO}/${SEDNA_MANIFEST_REF}/$yaml_dir/$yaml; do
-      ((++i>try_times)) && {
-        echo timeout to download $yaml
-        exit 2
-      }
-      echo -en "retrying to download $yaml after $[i*timeout] seconds...\r"
-    done
+  for resource in "${required_install_resources[@]}"; do
+    if [ ! -f "$SEDNA_ROOT/$resource" ]; then
+      echo "missing install resource: $SEDNA_ROOT/$resource" >&2
+      missing=1
+    fi
   done
-}
 
-download_yamls() {
-  yaml_files=(
-  sedna.io_datasets.yaml
-  sedna.io_featureextractionservices.yaml
-  sedna.io_federatedlearningjobs.yaml
-  sedna.io_incrementallearningjobs.yaml
-  sedna.io_jointinferenceservices.yaml
-  sedna.io_jointmultiedgeservices.yaml
-  sedna.io_lifelonglearningjobs.yaml
-  sedna.io_models.yaml
-  sedna.io_objectsearchservices.yaml
-  sedna.io_objecttrackingservices.yaml
-  sedna.io_reidjobs.yaml
-  sedna.io_runtimeservices.yaml
-  sedna.io_videoanalyticsjobs.yaml
-  )
-  _download_yamls build/crds
-  yaml_files=(
-    gm.yaml
-  )
-  _download_yamls build/gm/rbac
+  if [ "$missing" -ne 0 ]; then
+    echo "Use a complete Dayu-Sedna checkout or release bundle from one revision." >&2
+    exit 2
+  fi
 }
 
 prepare_install(){
@@ -115,25 +114,17 @@ prepare_install(){
   kubectl create ns sedna
 }
 
-prepare() {
-  mkdir -p ${SEDNA_ROOT}
-
-  # we only need build directory
-  # here don't use git clone because of large vendor directory
-  download_yamls
-}
-
 cleanup(){
   kubectl delete ns sedna
 }
 
 create_crds() {
-  cd ${SEDNA_ROOT}
+  cd "$SEDNA_ROOT"
   kubectl create -f build/crds
 }
 
 delete_crds() {
-  cd ${SEDNA_ROOT}
+  cd "$SEDNA_ROOT"
   kubectl delete -f build/crds --timeout=90s
 }
 
@@ -146,7 +137,7 @@ get_service_address() {
 }
 
 create_kb(){
-  cd ${SEDNA_ROOT}
+  cd "$SEDNA_ROOT"
 
   kubectl $action -f - <<EOF
 apiVersion: v1
@@ -241,8 +232,7 @@ EOF
 }
 
 create_gm() {
-
-  cd ${SEDNA_ROOT}
+  cd "$SEDNA_ROOT"
 
   kubectl create -f build/gm/rbac/
 
@@ -313,7 +303,7 @@ EOF
 }
 
 delete_gm() {
-  cd ${SEDNA_ROOT}
+  cd "$SEDNA_ROOT"
 
   kubectl delete -f build/gm/rbac/
 
@@ -452,6 +442,7 @@ red_text() {
   echo -ne "$RED$@$NO_COLOR"
 }
 
+validate_install_resources
 do_check
 
 if [ "$action" = create ]; then
@@ -462,7 +453,6 @@ if [ "$action" = create ]; then
   SEDNA_LC_IMAGE=${SEDNA_LC_IMAGE:-kubeedge/sedna-lc:$SEDNA_VERSION}
 fi
 
-prepare
 case "$action" in
   create)
     echo "Installing Sedna $SEDNA_VERSION..."
