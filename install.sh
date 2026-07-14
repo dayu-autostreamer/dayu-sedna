@@ -390,7 +390,9 @@ check_action() {
 }
 
 check_dayu_images() {
-  [ "$action" = create ] || return
+  if [ "$action" != create ]; then
+    return 0
+  fi
 
   local component image_variable image
   for component in KB GM LC; do
