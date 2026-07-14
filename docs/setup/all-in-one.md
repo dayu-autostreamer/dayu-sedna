@@ -32,7 +32,7 @@ Advanced options:
 |NUM_CLOUD_WORKER_NODES    | Number of cloud **worker** nodes, not master node| 0|
 |SEDNA_VERSION    | The Sedna version to be installed. |The latest version|
 |SEDNA_MANIFEST_REPO | Repository containing install manifests. |dayu-autostreamer/dayu-sedna|
-|SEDNA_MANIFEST_REF | Branch, tag, or commit containing install manifests. |v1.1|
+|SEDNA_MANIFEST_REF | Branch, tag, or commit containing the root installer and install manifests. |main|
 |SEDNA_ENABLE_RUNTIME_SERVICE | Fail-fast managed profile; requires explicit GM and LC images. |false|
 |SEDNA_GM_IMAGE | Exact GM image; set to an image built from this fork for RuntimeService. |upstream image for `SEDNA_VERSION`|
 |SEDNA_LC_IMAGE | Exact LC image; set to an image built from this fork for RuntimeService. |upstream image for `SEDNA_VERSION`|

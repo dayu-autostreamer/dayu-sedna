@@ -36,7 +36,7 @@
 # SEDNA_VERSION         | optional | The Sedna version to be installed.
 #                                    if not specified, it will get latest release or v0.4.1
 # SEDNA_MANIFEST_REPO   | optional | GitHub repo containing this fork's install manifests
-# SEDNA_MANIFEST_REF    | optional | Git ref in SEDNA_MANIFEST_REPO, default 'v1.1'
+# SEDNA_MANIFEST_REF    | optional | Git ref in SEDNA_MANIFEST_REPO, default 'main'
 # SEDNA_ENABLE_RUNTIME_SERVICE | optional | 'true' requires explicit fork GM/LC images
 # SEDNA_GM_IMAGE        | optional | Exact GM image (set to use RuntimeService)
 # SEDNA_LC_IMAGE        | optional | Exact LC image (set to use RuntimeService)
@@ -60,7 +60,7 @@ DEFAULT_NODE_IMAGE_VERSION=v1.21.1
 function prepare_env() {
   : ${CLUSTER_NAME:=sedna-mini}
   : ${SEDNA_MANIFEST_REPO:=dayu-autostreamer/dayu-sedna}
-  : ${SEDNA_MANIFEST_REF:=v1.1}
+  : ${SEDNA_MANIFEST_REF:=main}
   : ${SEDNA_RELEASE_REPO:=kubeedge/sedna}
   : ${SEDNA_ENABLE_RUNTIME_SERVICE:=false}
 
@@ -604,7 +604,7 @@ function clean_edge() {
 
 function run_sedna_installer() {
   local action=$1
-  local installer_url=https://raw.githubusercontent.com/${SEDNA_MANIFEST_REPO}/${SEDNA_MANIFEST_REF}/scripts/installation/install.sh
+  local installer_url=https://raw.githubusercontent.com/${SEDNA_MANIFEST_REPO}/${SEDNA_MANIFEST_REF}/install.sh
   local sedna_env=(
     "SEDNA_ACTION=$action"
     "SEDNA_VERSION=$SEDNA_VERSION"

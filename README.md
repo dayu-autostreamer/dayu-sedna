@@ -39,17 +39,21 @@ We assume that you have finished the k8s and kubeedge installation
 - git clone
 
   ```sh
-  git clone --branch v1.1 https://github.com/dayu-autostreamer/dayu-sedna.git
+  git clone https://github.com/dayu-autostreamer/dayu-sedna.git
   ```
 
 - install sedna
 
   ```sh
-  curl -LO https://raw.githubusercontent.com/dayu-autostreamer/dayu-sedna/v1.1/scripts/installation/install.sh
+  cd dayu-sedna
+  SEDNA_ACTION=create bash install.sh
   ```
 
+- uninstall sedna
+
   ```sh
-  SEDNA_ACTION=create bash install.sh
+  cd dayu-sedna
+  SEDNA_ACTION=delete bash install.sh
   ```
 
 - yaml examples

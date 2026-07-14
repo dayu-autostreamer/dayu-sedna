@@ -19,7 +19,7 @@ Currently GM is deployed as a [`deployment`][deployment], and LC is deployed as 
 
 Run the one liner:
 ```shell
-curl https://raw.githubusercontent.com/dayu-autostreamer/dayu-sedna/v1.1/scripts/installation/install.sh | SEDNA_ACTION=create bash -
+curl https://raw.githubusercontent.com/dayu-autostreamer/dayu-sedna/main/install.sh | SEDNA_ACTION=create bash -
 
 ```
 
@@ -35,7 +35,7 @@ activate RuntimeService, GM and LC must be built from the same fork revision as
 the manifests and supplied explicitly:
 
 ```shell
-curl -LO https://raw.githubusercontent.com/dayu-autostreamer/dayu-sedna/v1.1/scripts/installation/install.sh
+curl -LO https://raw.githubusercontent.com/dayu-autostreamer/dayu-sedna/main/install.sh
 SEDNA_ACTION=create \
 SEDNA_ENABLE_RUNTIME_SERVICE=true \
 SEDNA_GM_IMAGE=dayuhub/sedna-gm:v1.1 \
@@ -50,7 +50,7 @@ If you have unstable network to access github or existing sedna source, you can 
 ```shell
 # SEDNA_ROOT is the sedna git source directory or cached directory
 export SEDNA_ROOT=/opt/sedna
-curl https://raw.githubusercontent.com/dayu-autostreamer/dayu-sedna/v1.1/scripts/installation/install.sh | SEDNA_ACTION=create bash -
+curl https://raw.githubusercontent.com/dayu-autostreamer/dayu-sedna/main/install.sh | SEDNA_ACTION=create bash -
 ```
 
 #### Debug
@@ -71,7 +71,7 @@ kubectl get pod -n sedna
 
 #### Uninstall Sedna
 ```shell
-curl https://raw.githubusercontent.com/dayu-autostreamer/dayu-sedna/v1.1/scripts/installation/install.sh | SEDNA_ACTION=delete bash -
+curl https://raw.githubusercontent.com/dayu-autostreamer/dayu-sedna/main/install.sh | SEDNA_ACTION=delete bash -
 ```
 
 [kubectl]:https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#install-kubectl-binary-with-curl-on-linux

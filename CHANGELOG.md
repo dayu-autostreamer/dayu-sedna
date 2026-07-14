@@ -39,5 +39,6 @@ remain unchanged.
   including Dayu image builds, installer behavior, NodePort communication, and
   file/device mount extensions.
 
+[Unreleased]: https://github.com/dayu-autostreamer/dayu-sedna/compare/v1.1...HEAD
 [v1.1]: https://github.com/dayu-autostreamer/dayu-sedna/compare/v1.0...v1.1
 [v1.0]: https://github.com/dayu-autostreamer/dayu-sedna/tree/v1.0
