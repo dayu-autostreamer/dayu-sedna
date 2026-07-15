@@ -145,7 +145,7 @@ func testRuntimeService() *sednav1.RuntimeService {
 			Component:          "processor",
 			LogicalService:     "face/detection",
 			TargetNode:         "edge1",
-			PodTemplate: corev1.PodTemplateSpec{
+			PodTemplate: sednav1.RuntimePodTemplateSpec{
 				Spec: corev1.PodSpec{
 					Containers: []corev1.Container{{
 						Name:  "processor",
@@ -161,6 +161,16 @@ func testRuntimeService() *sednav1.RuntimeService {
 
 func TestDesiredResourcesAreOneToOneAndMeshManaged(t *testing.T) {
 	runtimeService := testRuntimeService()
+	runtimeService.Spec.PodTemplate.Labels = map[string]string{
+		"app.kubernetes.io/managed-by": "dayu-backend",
+		LabelMeshManaged:               "true",
+	}
+	runtimeService.Spec.PodTemplate.Annotations = map[string]string{
+		"dayu.io/user-note": "preserved",
+	}
+	if err := validateRuntimeService(runtimeService); err != nil {
+		t.Fatalf("valid caller pod-template metadata was rejected: %v", err)
+	}
 	deployment := desiredDeployment(runtimeService)
 	networkService := desiredService(runtimeService)
 
@@ -184,8 +194,14 @@ func TestDesiredResourcesAreOneToOneAndMeshManaged(t *testing.T) {
 		t.Fatalf("children must have a valid RuntimeService controller owner reference")
 	}
 	if !hasIdentityLabels(deployment.Labels, identityLabels(runtimeService)) ||
+		!hasIdentityLabels(deployment.Spec.Template.Labels, identityLabels(runtimeService)) ||
 		!hasIdentityLabels(networkService.Labels, identityLabels(runtimeService)) {
 		t.Fatalf("children are missing the mesh identity labels")
+	}
+	if deployment.Spec.Template.Labels["app.kubernetes.io/managed-by"] != "dayu-backend" ||
+		deployment.Spec.Template.Annotations["dayu.io/user-note"] != "preserved" {
+		t.Fatalf("caller pod-template metadata was not preserved: labels=%v annotations=%v",
+			deployment.Spec.Template.Labels, deployment.Spec.Template.Annotations)
 	}
 	if networkService.Spec.Type != corev1.ServiceTypeClusterIP || len(networkService.Spec.Ports) != 1 {
 		t.Fatalf("endpoint must be one ClusterIP Service port")
@@ -198,6 +214,20 @@ func TestDesiredResourcesAreOneToOneAndMeshManaged(t *testing.T) {
 	if networkService.Annotations[AnnotationLogicalService] != "face/detection" ||
 		networkService.Annotations[AnnotationTargetNode] != "edge1" {
 		t.Fatalf("full identities must be preserved as annotations")
+	}
+}
+
+func TestDesiredDeploymentAlwaysOverlaysControllerIdentity(t *testing.T) {
+	runtimeService := testRuntimeService()
+	runtimeService.Spec.PodTemplate.Labels = map[string]string{
+		LabelMeshManaged:       "false",
+		LabelRuntimeServiceUID: "caller-value",
+	}
+	templateLabels := desiredDeployment(runtimeService).Spec.Template.Labels
+	if templateLabels[LabelMeshManaged] != "true" ||
+		templateLabels[LabelRuntimeServiceUID] != string(runtimeService.UID) ||
+		!hasIdentityLabels(templateLabels, identityLabels(runtimeService)) {
+		t.Fatalf("controller identity did not override caller labels: %v", templateLabels)
 	}
 }
 
@@ -235,6 +265,15 @@ func TestValidateRuntimeServiceRejectsUnsafeOrUnreachableSpecs(t *testing.T) {
 		}},
 		{name: "reserved label conflict", mutate: func(service *sednav1.RuntimeService) {
 			service.Spec.PodTemplate.Labels = map[string]string{LabelRuntimeID: "other"}
+		}},
+		{name: "invalid pod template label key", mutate: func(service *sednav1.RuntimeService) {
+			service.Spec.PodTemplate.Labels = map[string]string{"bad key": "value"}
+		}},
+		{name: "invalid pod template label value", mutate: func(service *sednav1.RuntimeService) {
+			service.Spec.PodTemplate.Labels = map[string]string{"example.com/key": "bad/value"}
+		}},
+		{name: "invalid pod template annotation key", mutate: func(service *sednav1.RuntimeService) {
+			service.Spec.PodTemplate.Annotations = map[string]string{"bad key": "value"}
 		}},
 		{name: "undeclared endpoint port", mutate: func(service *sednav1.RuntimeService) {
 			service.Spec.Endpoint.Port = 9100

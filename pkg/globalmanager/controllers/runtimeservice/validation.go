@@ -88,6 +88,20 @@ func validateRuntimeService(service *sednav1.RuntimeService) error {
 		}
 	}
 
+	for key, value := range service.Spec.PodTemplate.Labels {
+		if errors := utilvalidation.IsQualifiedName(key); len(errors) != 0 {
+			return fmt.Errorf("podTemplate label key %q is invalid: %s", key, errors[0])
+		}
+		if errors := utilvalidation.IsValidLabelValue(value); len(errors) != 0 {
+			return fmt.Errorf("podTemplate label %q has invalid value %q: %s", key, value, errors[0])
+		}
+	}
+	for key := range service.Spec.PodTemplate.Annotations {
+		if errors := utilvalidation.IsQualifiedName(key); len(errors) != 0 {
+			return fmt.Errorf("podTemplate annotation key %q is invalid: %s", key, errors[0])
+		}
+	}
+
 	expectedLabels := identityLabels(service)
 	for _, key := range identityLabelKeys {
 		if value, found := service.Spec.PodTemplate.Labels[key]; found && value != expectedLabels[key] {

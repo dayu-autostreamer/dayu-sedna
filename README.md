@@ -30,6 +30,11 @@ Runtime pods do not receive a Kubernetes service-account token and no longer
 need per-process Pod/Node/Service discovery. See
 [the RuntimeService contract](docs/runtime-service.md).
 
+RuntimeService pod-template labels and annotations are preserved by the CRD
+schema and copied to the Pod. Sedna always overlays the authoritative
+`dayu.io/*` identity labels, so control-plane selectors do not depend on
+optional application labels.
+
 
 
 ## Quick Start

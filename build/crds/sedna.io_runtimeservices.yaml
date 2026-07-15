@@ -99,11 +99,21 @@ spec:
                   variables, or images.
                 properties:
                   metadata:
-                    description: 'Standard object''s metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata'
+                    description: RuntimePodTemplateMetadata is caller metadata copied
+                      to the generated Pod. Controller-owned dayu.io keys are validated
+                      and overlaid during reconciliation.
+                    properties:
+                      annotations:
+                        additionalProperties:
+                          type: string
+                        type: object
+                      labels:
+                        additionalProperties:
+                          type: string
+                        type: object
                     type: object
                   spec:
-                    description: 'Specification of the desired behavior of the pod.
-                      More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status'
+                    description: PodSpec is a description of a pod.
                     properties:
                       activeDeadlineSeconds:
                         description: Optional duration in seconds the pod may be active
@@ -6748,6 +6758,8 @@ spec:
                     required:
                     - containers
                     type: object
+                required:
+                - spec
                 type: object
               targetNode:
                 description: TargetNode is the exact Kubernetes node on which the

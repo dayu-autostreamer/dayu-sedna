@@ -47,6 +47,24 @@ The managed install profile exits before changing the cluster if either GM or
 LC image is absent. `SEDNA_KB_IMAGE` can override KB independently;
 RuntimeService itself does not require a modified KB.
 
+To update an existing Dayu-Sedna installation, apply the RuntimeService CRD
+before replacing GM/LC. Do not rerun the fresh-install `create` action, and do
+not rely on `helm upgrade` to update files from a chart's `crds/` directory:
+
+```shell
+kubectl apply --server-side \
+  --field-manager=dayu-sedna-crd-upgrade \
+  --force-conflicts \
+  -f build/crds/sedna.io_runtimeservices.yaml
+```
+
+This updates the structural schema in place without deleting existing custom
+resources. It cannot restore labels or annotations that the previous schema
+already pruned from stored RuntimeService objects; recreate those objects
+through the normal Dayu uninstall/install flow (or a new runtime revision).
+Server-side apply avoids adding the full raw CRD to the
+`kubectl.kubernetes.io/last-applied-configuration` annotation.
+
 For an offline installation, copy or extract the complete checkout/archive on
 the target host. `SEDNA_ROOT` may point to another directory only when that
 directory contains the complete version-matched `build/crds` and

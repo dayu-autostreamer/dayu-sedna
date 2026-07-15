@@ -72,12 +72,30 @@ type RuntimeServiceSpec struct {
 
 	// PodTemplate is a fully rendered pod template. RuntimeService does not define a
 	// second templating language for mounts, environment variables, or images.
-	PodTemplate corev1.PodTemplateSpec `json:"podTemplate"`
+	PodTemplate RuntimePodTemplateSpec `json:"podTemplate"`
 
 	// Endpoint requests one mesh-visible ClusterIP Service for this worker.
 	// Omit it for workers, such as generators, which accept no inbound traffic.
 	// +optional
 	Endpoint *RuntimeServiceEndpointSpec `json:"endpoint,omitempty"`
+}
+
+// RuntimePodTemplateSpec is the supported subset of corev1.PodTemplateSpec.
+// Keeping metadata narrow makes labels and annotations explicit structural CRD
+// fields instead of an empty nested ObjectMeta that the API server would prune.
+// RuntimeService owns all other pod-template metadata.
+type RuntimePodTemplateSpec struct {
+	RuntimePodTemplateMetadata `json:"metadata,omitempty"`
+	Spec                       corev1.PodSpec `json:"spec"`
+}
+
+// RuntimePodTemplateMetadata is caller metadata copied to the generated Pod.
+// Controller-owned dayu.io keys are validated and overlaid during reconciliation.
+type RuntimePodTemplateMetadata struct {
+	// +optional
+	Labels map[string]string `json:"labels,omitempty"`
+	// +optional
+	Annotations map[string]string `json:"annotations,omitempty"`
 }
 
 // RuntimeServiceEndpointSpec describes the single network endpoint exposed by a worker.

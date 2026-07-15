@@ -28,8 +28,17 @@ COMPONENTS ?= gm lc kb
 IMAGE_TAG ?= v1.1
 GO_LDFLAGS ?= ""
 
-# set allowDangerousTypes for allowing float
+# Keep CRD generation reproducible. RuntimeService uses a narrow local pod
+# template metadata type, so the existing generator emits labels/annotations as
+# a structural schema without enabling embedded ObjectMeta for every Sedna CRD.
+CONTROLLER_GEN_VERSION ?= v0.4.1
+# controller-gen v0.4.1's loader is not compatible with binaries built by Go
+# 1.22+. Newer Go commands select this compatible toolchain automatically;
+# the project-declared Go 1.17 toolchain safely ignores GOTOOLCHAIN and remains
+# supported.
+CONTROLLER_GEN_GO_TOOLCHAIN ?= go1.20.14
 CRD_OPTIONS ?= "crd:crdVersions=v1,allowDangerousTypes=true"
+HELM_CRD_OPTIONS ?= "crd:crdVersions=v1,allowDangerousTypes=true,maxDescLen=0"
 
 # make all builds both gm and lc binaries
 BINARIES=gm lc
@@ -179,31 +188,38 @@ push-multi-platform-images:
 e2e:
 	hack/run-e2e.sh
 
-# Generate CRDs by kubebuilder
-.PHONY: crds controller-gen
+# Generate CRDs by kubebuilder. The legacy crds target retains its existing
+# all-raw-manifests scope. RuntimeService has a focused target so updating its
+# raw and Helm artifacts cannot rewrite unrelated historical CRDs.
+.PHONY: crds runtime-service-crds controller-gen
 crds: controller-gen
-	$(CONTROLLER_GEN) $(CRD_OPTIONS) paths="./pkg/apis/sedna/v1alpha1" output:crd:artifacts:config=build/crds
+	GOTOOLCHAIN="$(CONTROLLER_GEN_GO_TOOLCHAIN)" GOCACHE="$(CONTROLLER_GEN_GOCACHE)" \
+		$(CONTROLLER_GEN) $(CRD_OPTIONS) paths="./pkg/apis/sedna/v1alpha1" output:crd:artifacts:config=build/crds
 
-# Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
-ifeq (,$(shell go env GOBIN))
-GOBIN=$(shell go env GOPATH)/bin
-else
-GOBIN=$(shell go env GOBIN)
-endif
+# Use a versioned repository-local binary instead of whichever controller-gen
+# happens to be installed on the developer machine.
+CONTROLLER_GEN_DIR := $(CURDIR)/$(OUT_DIR)/tools
+CONTROLLER_GEN := $(CONTROLLER_GEN_DIR)/controller-gen-$(CONTROLLER_GEN_VERSION)-$(CONTROLLER_GEN_GO_TOOLCHAIN)
+CONTROLLER_GEN_GOCACHE := $(CURDIR)/$(OUT_DIR)/cache/go-build
+RUNTIME_SERVICE_CRD := sedna.io_runtimeservices.yaml
+RUNTIME_SERVICE_CRD_OUTPUT := $(CURDIR)/$(OUT_DIR)/generated-crds/runtime-service
 
-# find or download controller-gen
-# download controller-gen if necessary
+runtime-service-crds: controller-gen
+	rm -rf "$(RUNTIME_SERVICE_CRD_OUTPUT)"
+	mkdir -p "$(RUNTIME_SERVICE_CRD_OUTPUT)/raw" "$(RUNTIME_SERVICE_CRD_OUTPUT)/helm"
+	GOTOOLCHAIN="$(CONTROLLER_GEN_GO_TOOLCHAIN)" GOCACHE="$(CONTROLLER_GEN_GOCACHE)" \
+		$(CONTROLLER_GEN) $(CRD_OPTIONS) paths="./pkg/apis/sedna/v1alpha1" \
+		output:crd:artifacts:config="$(RUNTIME_SERVICE_CRD_OUTPUT)/raw"
+	GOTOOLCHAIN="$(CONTROLLER_GEN_GO_TOOLCHAIN)" GOCACHE="$(CONTROLLER_GEN_GOCACHE)" \
+		$(CONTROLLER_GEN) $(HELM_CRD_OPTIONS) paths="./pkg/apis/sedna/v1alpha1" \
+		output:crd:artifacts:config="$(RUNTIME_SERVICE_CRD_OUTPUT)/helm"
+	cp "$(RUNTIME_SERVICE_CRD_OUTPUT)/raw/$(RUNTIME_SERVICE_CRD)" "build/crds/$(RUNTIME_SERVICE_CRD)"
+	cp "$(RUNTIME_SERVICE_CRD_OUTPUT)/helm/$(RUNTIME_SERVICE_CRD)" "build/helm/sedna/crds/$(RUNTIME_SERVICE_CRD)"
+
 controller-gen:
-ifeq (, $(shell which controller-gen))
-	@{ \
-	set -e ;\
-	CONTROLLER_GEN_TMP_DIR=$$(mktemp -d) ;\
-	cd $$CONTROLLER_GEN_TMP_DIR ;\
-	go mod init tmp ;\
-	go get sigs.k8s.io/controller-tools/cmd/controller-gen@v0.4.1 ;\
-	rm -rf $$CONTROLLER_GEN_TMP_DIR ;\
-	}
-CONTROLLER_GEN=$(GOBIN)/controller-gen
-else
-CONTROLLER_GEN=$(shell which controller-gen)
-endif
+	@mkdir -p "$(CONTROLLER_GEN_DIR)" "$(CONTROLLER_GEN_GOCACHE)"
+	@if [ ! -x "$(CONTROLLER_GEN)" ]; then \
+		GOTOOLCHAIN="$(CONTROLLER_GEN_GO_TOOLCHAIN)" GOCACHE="$(CONTROLLER_GEN_GOCACHE)" GOBIN="$(CONTROLLER_GEN_DIR)" \
+			go install sigs.k8s.io/controller-tools/cmd/controller-gen@$(CONTROLLER_GEN_VERSION); \
+		mv "$(CONTROLLER_GEN_DIR)/controller-gen" "$(CONTROLLER_GEN)"; \
+	fi

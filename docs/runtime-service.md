@@ -57,6 +57,21 @@ also written to the Deployment/Pod template and closes the failure window where
 children were created but the first status update did not reach the API server.
 Changing a revision-scoped spec is rejected; create a new RuntimeService.
 
+`spec.podTemplate.metadata.labels` and `annotations` are structural string maps
+in both published CRDs. Kubernetes therefore preserves caller metadata and the
+controller copies it to the Pod template. The six `dayu.io/*` labels above are
+controller-owned: matching caller values are accepted, conflicting values are
+rejected, and reconciliation always overlays the authoritative values. Runtime
+discovery and metrics should select these guaranteed labels (normally
+`dayu.io/mesh-managed=true`, optionally narrowed by install ID or revision),
+not an application-specific label.
+
+`status.endpoint.dnsName` is the stable Kubernetes service identity in the form
+`<service>.<namespace>.svc.cluster.local`; it intentionally has no terminal
+dot. DNS clients running with a high `ndots` value should canonicalize it to an
+absolute query name at their connection boundary. The stored status identity
+must not vary with client resolver policy.
+
 ## Conditions and activation semantics
 
 The status conditions are `SpecAccepted`, `ResourcesReconciled`, `NodeReady`,
@@ -109,6 +124,28 @@ For the managed path, upgrade in this order:
 4. create RuntimeServices only after the node-local EdgeMesh status service is
    ready on `127.0.0.1:10551`.
 
+For an existing installation, update the RuntimeService schema before rolling
+out a new GM image. The root installer is a fresh-install workflow, and Helm
+does not upgrade CRDs from its `crds/` directory:
+
+```sh
+kubectl apply --server-side \
+  --field-manager=dayu-sedna-crd-upgrade \
+  --force-conflicts \
+  -f build/crds/sedna.io_runtimeservices.yaml
+```
+
+Server-side apply is intentional because the described raw CRD is too large to
+store safely in the client-side last-applied annotation. `--force-conflicts`
+transfers schema-field ownership from the original create/install manager; it
+does not delete existing RuntimeService objects.
+
+The schema update affects subsequent writes only. It cannot reconstruct
+Pod-template labels or annotations that the API server already pruned under
+the old schema. Recreate those RuntimeService objects through Dayu's normal
+uninstall/install lifecycle (or publish a new runtime revision) when the
+caller-supplied metadata itself is required.
+
 Installing the new Sedna binary without the RuntimeService CRD does not remove
 legacy controllers, but the new informer will retry until the CRD is installed.
 Conversely, installing only the CRD with the default legacy upstream images
@@ -116,3 +153,18 @@ does not enable RuntimeService; this is intentional so existing JMES installs
 remain backward compatible instead of silently changing their binaries.
 
 See [the sample manifest](../build/crd-samples/sedna/runtimeservice_v1alpha1.yaml).
+
+## Regenerating CRDs
+
+Run `make runtime-service-crds` from the repository root. The target builds the
+pinned controller-gen release with a compatible Go toolchain into `_output/tools` and
+generates all schemas in an isolated `_output` directory, then publishes only
+the RuntimeService raw-install and Helm CRDs. This prevents an API-local change
+from reformatting or rewriting unrelated historical Sedna CRDs. The toolchain cap matters because a
+controller-gen v0.4.1 binary built with Go 1.22 or newer can fail while loading
+types; the repository target selects Go 1.20.14 on newer Go commands while the
+project's declared Go 1.17 remains supported. RuntimeService deliberately uses a narrow local pod-template
+metadata type instead of embedding Kubernetes `ObjectMeta`; this keeps the wire
+shape unchanged while generating only the supported `labels` and `annotations`
+maps. Do not replace it with an unrestricted `ObjectMeta`: the pinned generator
+would emit an empty nested schema and the API server would prune those maps.

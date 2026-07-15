@@ -33,6 +33,17 @@ remain unchanged.
   dayu-edgemesh `v1.1`; `v1.0` does not implement the RuntimeService activation
   contract.
 
+### Fixed
+
+- Fixed the structural RuntimeService CRD schema so Kubernetes preserves
+  `spec.podTemplate.metadata.labels` and `annotations` instead of silently
+  pruning them before GM reconciliation. Raw-install and Helm CRDs now share
+  the same generated metadata contract.
+- Narrowed RuntimeService pod-template metadata to the two supported structural
+  string maps, pinned its isolated CRD generation toolchain, and added
+  regression coverage for the published manifests and controller-enforced
+  `dayu.io/*` Pod identity labels.
+
 ## [v1.0] - 2026-04-14
 
 - Established the legacy Dayu Sedna baseline based on `JointMultiEdgeService`,

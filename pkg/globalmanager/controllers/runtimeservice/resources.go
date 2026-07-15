@@ -38,9 +38,13 @@ const runtimePortName = "runtime"
 func desiredDeployment(service *sednav1.RuntimeService) *appsv1.Deployment {
 	replicas := int32(1)
 	automountToken := false
-	template := *service.Spec.PodTemplate.DeepCopy()
-	template.Labels = mergeStringMap(template.Labels, identityLabels(service))
-	template.Annotations = mergeStringMap(template.Annotations, identityAnnotations(service))
+	template := corev1.PodTemplateSpec{
+		ObjectMeta: metav1.ObjectMeta{
+			Labels:      mergeStringMap(service.Spec.PodTemplate.Labels, identityLabels(service)),
+			Annotations: mergeStringMap(service.Spec.PodTemplate.Annotations, identityAnnotations(service)),
+		},
+		Spec: *service.Spec.PodTemplate.Spec.DeepCopy(),
+	}
 	template.Spec.NodeName = service.Spec.TargetNode
 	template.Spec.RestartPolicy = corev1.RestartPolicyAlways
 	template.Spec.AutomountServiceAccountToken = &automountToken

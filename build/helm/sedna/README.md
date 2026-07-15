@@ -37,10 +37,24 @@ $ helm uninstall sedna
 ## Update CRDs
 
 ```
-$ controller-gen crd:crdVersions=v1,allowDangerousTypes=true,maxDescLen=0 paths="./pkg/apis/sedna/v1alpha1" output:crd:artifacts:config=build/helm/sedna/crds
+$ make runtime-service-crds
+$ kubectl apply --server-side \
+    --field-manager=dayu-sedna-crd-upgrade \
+    --force-conflicts \
+    -f build/helm/sedna/crds/sedna.io_runtimeservices.yaml
 ```
 
-**NOTE: Set `maxDescLen=0` will generate crd yaml file without description field. Avoid too large data causing helm installation to fail. See [issue](https://github.com/helm/helm/issues/6711).**
+The focused repository target builds a pinned controller-gen with its compatible Go
+toolchain and uses RuntimeService's narrow metadata type so pod-template labels
+and annotations are not pruned. It publishes only the raw and Helm RuntimeService
+manifests, leaving unrelated historical CRDs untouched. The
+Helm generation keeps `maxDescLen=0` to avoid oversized release data; see [Helm issue
+6711](https://github.com/helm/helm/issues/6711).
+
+[Helm installs but does not upgrade CRDs from `crds/`](https://helm.sh/docs/chart_best_practices/custom_resource_definitions/).
+Apply the RuntimeService CRD explicitly before `helm upgrade`; server-side apply
+avoids the oversized last-applied annotation produced by client-side apply and
+the dedicated field manager makes ownership explicit.
 
 The chart ships both `JointMultiEdgeService` and `RuntimeService` CRDs. Install
 or upgrade CRDs before rolling out a new GM image so the RuntimeService informer
