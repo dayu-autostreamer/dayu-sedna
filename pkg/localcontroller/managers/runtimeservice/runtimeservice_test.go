@@ -20,6 +20,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"sync"
@@ -37,6 +38,18 @@ type roundTripFunc func(*http.Request) (*http.Response, error)
 
 func (function roundTripFunc) RoundTrip(request *http.Request) (*http.Response, error) {
 	return function(request)
+}
+
+type staticResolver struct {
+	addresses map[string][]string
+	err       error
+}
+
+func (resolver staticResolver) LookupHost(_ context.Context, host string) ([]string, error) {
+	if resolver.err != nil {
+		return nil, resolver.err
+	}
+	return append([]string(nil), resolver.addresses[host]...), nil
 }
 
 func routeHTTPClient(t *testing.T, statusCode int, route func() activation.RouteStatus, inspect func(*http.Request)) *http.Client {
@@ -116,6 +129,29 @@ func testActivationRequest() activation.ActivationRequest {
 	}
 }
 
+func exactRoute(request activation.ActivationRequest) activation.RouteStatus {
+	return activation.RouteStatus{
+		ServiceUID:         request.ServiceUID,
+		RuntimeServiceUID:  request.RuntimeServiceUID,
+		FQDN:               fmt.Sprintf("%s.%s.svc.cluster.local", request.Name, request.Namespace),
+		ServiceIP:          "10.96.0.42",
+		EndpointPodUID:     request.EndpointPodUID,
+		DeploymentRevision: request.DeploymentRevision,
+		RuntimeID:          request.RuntimeID,
+		State:              activation.RouteStateApplied,
+		SourceState:        activation.RouteSourceSynced,
+		TargetNode:         request.TargetNode,
+		LocalSequence:      9,
+		ObservedAt:         time.Now(),
+	}
+}
+
+func installRouteResolver(manager *Manager, route activation.RouteStatus) {
+	manager.resolver = staticResolver{addresses: map[string][]string{
+		route.FQDN: {route.ServiceIP},
+	}}
+}
+
 func activationMessage(t *testing.T, request activation.ActivationRequest, operation string) *clienttypes.Message {
 	t.Helper()
 	content, err := json.Marshal(request)
@@ -147,18 +183,7 @@ func waitFor(t *testing.T, timeout time.Duration, predicate func() bool) {
 
 func TestManagerAcknowledgesOnlyExactAppliedSyncedRoute(t *testing.T) {
 	request := testActivationRequest()
-	route := activation.RouteStatus{
-		ServiceUID:         request.ServiceUID,
-		RuntimeServiceUID:  request.RuntimeServiceUID,
-		EndpointPodUID:     request.EndpointPodUID,
-		DeploymentRevision: request.DeploymentRevision,
-		RuntimeID:          request.RuntimeID,
-		State:              activation.RouteStateApplied,
-		SourceState:        activation.RouteSourceSynced,
-		TargetNode:         request.TargetNode,
-		LocalSequence:      9,
-		ObservedAt:         time.Now(),
-	}
+	route := exactRoute(request)
 	httpClient := routeHTTPClient(t, http.StatusOK, func() activation.RouteStatus { return route }, func(httpRequest *http.Request) {
 		if httpRequest.URL.Path != "/v1/routes/"+string(request.ServiceUID) {
 			t.Errorf("unexpected route path %q", httpRequest.URL.Path)
@@ -167,6 +192,7 @@ func TestManagerAcknowledgesOnlyExactAppliedSyncedRoute(t *testing.T) {
 
 	client := &recordingClient{}
 	manager := New(client, "edge1")
+	installRouteResolver(manager, route)
 	manager.httpClient = httpClient
 	manager.statusBaseURL = "http://edgemesh.local"
 	manager.pollInterval = 5 * time.Millisecond
@@ -193,16 +219,8 @@ func TestManagerAcknowledgesOnlyExactAppliedSyncedRoute(t *testing.T) {
 
 func TestManagerRejectsReplayedRouteForOldPod(t *testing.T) {
 	request := testActivationRequest()
-	route := activation.RouteStatus{
-		ServiceUID:         request.ServiceUID,
-		RuntimeServiceUID:  request.RuntimeServiceUID,
-		EndpointPodUID:     types.UID("old-pod"),
-		DeploymentRevision: request.DeploymentRevision,
-		RuntimeID:          request.RuntimeID,
-		State:              activation.RouteStateApplied,
-		SourceState:        activation.RouteSourceSynced,
-		TargetNode:         request.TargetNode,
-	}
+	route := exactRoute(request)
+	route.EndpointPodUID = types.UID("old-pod")
 	client := &recordingClient{}
 	manager := New(client, "edge1")
 	manager.httpClient = routeHTTPClient(t, http.StatusOK, func() activation.RouteStatus { return route }, nil)
@@ -370,15 +388,11 @@ func TestManagerDoesNotAckAfterPollerCancellation(t *testing.T) {
 	request := testActivationRequest()
 	started := make(chan struct{})
 	release := make(chan struct{})
-	route := activation.RouteStatus{
-		ServiceUID: request.ServiceUID, RuntimeServiceUID: request.RuntimeServiceUID,
-		EndpointPodUID: request.EndpointPodUID, DeploymentRevision: request.DeploymentRevision,
-		RuntimeID: request.RuntimeID, TargetNode: request.TargetNode,
-		State: activation.RouteStateApplied, SourceState: activation.RouteSourceSynced,
-		LocalSequence: 1, ObservedAt: time.Now(),
-	}
+	route := exactRoute(request)
+	route.LocalSequence = 1
 	client := &recordingClient{}
 	manager := New(client, "edge1")
+	installRouteResolver(manager, route)
 	manager.pollInterval = 5 * time.Millisecond
 	manager.lease = time.Second
 	manager.httpClient = &http.Client{Transport: roundTripFunc(func(*http.Request) (*http.Response, error) {
@@ -402,6 +416,27 @@ func TestManagerDoesNotAckAfterPollerCancellation(t *testing.T) {
 	time.Sleep(20 * time.Millisecond)
 	if client.writeCount() != 0 {
 		t.Fatal("cancelled in-flight poller emitted a stale ACK")
+	}
+}
+
+func TestManagerRequiresDNSResolutionToMatchRouteServiceIP(t *testing.T) {
+	request := testActivationRequest()
+	route := exactRoute(request)
+	manager := New(&recordingClient{}, request.TargetNode)
+	manager.httpClient = routeHTTPClient(t, http.StatusOK, func() activation.RouteStatus { return route }, nil)
+	manager.statusBaseURL = "http://edgemesh.local"
+	manager.resolver = staticResolver{addresses: map[string][]string{
+		route.FQDN: {"10.96.0.99"},
+	}}
+
+	if _, ready, err := manager.readRoute(context.Background(), request); err == nil || ready {
+		t.Fatal("route with stale DNS ServiceIP was accepted")
+	}
+	manager.resolver = staticResolver{addresses: map[string][]string{
+		route.FQDN: {route.ServiceIP},
+	}}
+	if _, ready, err := manager.readRoute(context.Background(), request); err != nil || !ready {
+		t.Fatalf("exact route and DNS projection were not accepted: ready=%v err=%v", ready, err)
 	}
 }
 

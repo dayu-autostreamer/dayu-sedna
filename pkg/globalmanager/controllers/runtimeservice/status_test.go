@@ -24,6 +24,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/watch"
 
 	sednav1 "github.com/dayu-autostreamer/dayu-sedna/pkg/apis/sedna/v1alpha1"
 	activation "github.com/dayu-autostreamer/dayu-sedna/pkg/runtimeservice"
@@ -138,15 +139,17 @@ func TestStatusRequiresExactStickyActivationIdentity(t *testing.T) {
 	}
 }
 
-func TestActivatedIsStickyAcrossTransientHealthLossButNotIdentityReplacement(t *testing.T) {
+func TestActivatedLeaseSurvivesTransientHealthLossButNotIdentityReplacement(t *testing.T) {
 	runtimeService := testRuntimeService()
 	observation := readyObservation(runtimeService)
+	now := metav1.Now()
 	runtimeService.Status.Activation = &sednav1.RuntimeServiceActivationStatus{
 		TargetNode:              runtimeService.Spec.TargetNode,
 		ActivatedRevision:       runtimeService.Spec.DeploymentRevision,
 		ActivatedServiceUID:     observation.service.UID,
 		ActivatedEndpointPodUID: observation.pods[0].UID,
 		ActivatedLocalSequence:  11,
+		LastAckTime:             &now,
 	}
 	hash, _ := runtimeSpecHash(runtimeService)
 
@@ -175,6 +178,15 @@ func TestActivatedIsStickyAcrossTransientHealthLossButNotIdentityReplacement(t *
 	status = buildRuntimeStatus(runtimeService, hash, replacementService)
 	if runtimeConditionTrue(&status, sednav1.RuntimeServiceConditionActivated) {
 		t.Fatal("an observed Service replacement retained an ACK for the old Service UID")
+	}
+
+	expired := readyObservation(runtimeService)
+	old := metav1.NewTime(time.Now().Add(-activationHealthLease - time.Second))
+	runtimeService.Status.Activation.LastAckTime = &old
+	status = buildRuntimeStatus(runtimeService, hash, expired)
+	if runtimeConditionTrue(&status, sednav1.RuntimeServiceConditionActivated) ||
+		runtimeConditionTrue(&status, sednav1.RuntimeServiceConditionReady) {
+		t.Fatal("an expired node-local activation lease remained Ready")
 	}
 }
 
@@ -281,5 +293,72 @@ func TestAcceptedAckSurvivesInformerStatusLag(t *testing.T) {
 	controller.ackMu.Unlock()
 	if stillAccepted {
 		t.Fatal("persisted activation ACK was not retired from acceptedAcks")
+	}
+}
+
+func TestPendingRefreshAckRenewsLeaseWithGMReceiptTime(t *testing.T) {
+	runtimeService := testRuntimeService()
+	observation := readyObservation(runtimeService)
+	old := metav1.NewTime(time.Now().Add(-activationHealthLease + time.Second))
+	runtimeService.Status.Activation = &sednav1.RuntimeServiceActivationStatus{
+		TargetNode:              runtimeService.Spec.TargetNode,
+		ActivatedRevision:       runtimeService.Spec.DeploymentRevision,
+		ActivatedServiceUID:     observation.service.UID,
+		ActivatedEndpointPodUID: observation.pods[0].UID,
+		ActivatedLocalSequence:  7,
+		LastAckTime:             &old,
+	}
+	receivedAt := time.Now()
+	key := runtimeService.Namespace + "/" + runtimeService.Name
+	controller := &Controller{
+		pendingAcks: map[string]activation.ActivationAck{key: {
+			RuntimeServiceUID:  runtimeService.UID,
+			ServiceUID:         observation.service.UID,
+			EndpointPodUID:     observation.pods[0].UID,
+			DeploymentRevision: runtimeService.Spec.DeploymentRevision,
+			RuntimeID:          runtimeService.Name,
+			TargetNode:         runtimeService.Spec.TargetNode,
+			LocalSequence:      7,
+			ObservedAt:         time.Now().Add(-time.Minute),
+			ReceivedAt:         receivedAt,
+		}},
+		acceptedAcks: make(map[string]activation.ActivationAck),
+	}
+	controller.applyPendingAck(runtimeService, observation)
+	if runtimeService.Status.Activation.LastAckTime == nil ||
+		runtimeService.Status.Activation.LastAckTime.Time.Before(receivedAt) {
+		t.Fatalf("refresh ACK did not renew lease with GM receipt time: %#v", runtimeService.Status.Activation)
+	}
+}
+
+func TestReadyRuntimeDispatchesPeriodicActivationRefresh(t *testing.T) {
+	runtimeService := testRuntimeService()
+	observation := readyObservation(runtimeService)
+	now := metav1.Now()
+	runtimeService.Status.Activation = &sednav1.RuntimeServiceActivationStatus{
+		TargetNode:              runtimeService.Spec.TargetNode,
+		ActivatedRevision:       runtimeService.Spec.DeploymentRevision,
+		ActivatedServiceUID:     observation.service.UID,
+		ActivatedEndpointPodUID: observation.pods[0].UID,
+		ActivatedLocalSequence:  7,
+		LastAckTime:             &now,
+	}
+	hash, _ := runtimeSpecHash(runtimeService)
+	status := buildRuntimeStatus(runtimeService, hash, observation)
+	sent := 0
+	controller := &Controller{
+		downstreamSend: func(node string, event watch.EventType, object interface{}) error {
+			if node != runtimeService.Spec.TargetNode || event != watch.Added {
+				t.Fatalf("unexpected activation refresh target/event: %s %s", node, event)
+			}
+			sent++
+			return nil
+		},
+	}
+	if err := controller.maybeDispatchActivation(runtimeService, observation, &status); err != nil {
+		t.Fatal(err)
+	}
+	if sent != 1 || status.Activation == nil || status.Activation.LastRequestTime == nil {
+		t.Fatalf("Ready runtime did not dispatch a renewable activation check: sent=%d status=%#v", sent, status.Activation)
 	}
 }

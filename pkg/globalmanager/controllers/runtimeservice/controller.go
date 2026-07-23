@@ -55,9 +55,10 @@ const (
 	runtimeServiceUIDIndex = "runtimeServiceUID"
 	targetNodeIndex        = "targetNode"
 
-	notReadyRequeueInterval = 5 * time.Second
-	activationRetryInterval = 30 * time.Second
-	ackCacheRetryInterval   = time.Second
+	notReadyRequeueInterval   = 5 * time.Second
+	activationRetryInterval   = 30 * time.Second
+	activationRefreshInterval = 30 * time.Second
+	ackCacheRetryInterval     = time.Second
 )
 
 // Controller reconciles RuntimeService resources from shared informer caches.
@@ -200,6 +201,10 @@ func (c *Controller) sync(key string) error {
 		c.queue.AddAfter(key, ackCacheRetryInterval)
 	} else if !runtimeConditionTrue(&status, sednav1.RuntimeServiceConditionReady) {
 		c.queue.AddAfter(key, notReadyRequeueInterval)
+	} else if service.Spec.Endpoint != nil {
+		// A Ready route is a renewable health lease, not a one-time rollout
+		// barrier. Periodic reconciliation dispatches a fresh node-local check.
+		c.queue.AddAfter(key, activationRefreshInterval)
 	}
 	return dispatchErr
 }
@@ -461,7 +466,7 @@ func (c *Controller) applyPendingAck(service *sednav1.RuntimeService, observatio
 	found := pending
 	if !pending {
 		ack, found = c.acceptedAcks[key]
-		if found && activationMatchesAck(service.Status.Activation, ack) {
+		if found && activationAckPersisted(service.Status.Activation, ack) {
 			delete(c.acceptedAcks, key)
 			c.ackMu.Unlock()
 			return
@@ -486,17 +491,13 @@ func (c *Controller) applyPendingAck(service *sednav1.RuntimeService, observatio
 	}
 
 	activationStatus := service.Status.Activation
-	if activationMatchesAck(activationStatus, ack) {
-		c.clearActivationAcks(key)
-		return
-	}
 	c.ackMu.Lock()
 	delete(c.pendingAcks, key)
 	c.acceptedAcks[key] = ack
 	c.ackMu.Unlock()
 	ackTime := metav1.Now()
-	if !ack.ObservedAt.IsZero() {
-		ackTime = metav1.NewTime(ack.ObservedAt)
+	if !ack.ReceivedAt.IsZero() {
+		ackTime = metav1.NewTime(ack.ReceivedAt)
 	}
 	if activationStatus == nil {
 		activationStatus = &sednav1.RuntimeServiceActivationStatus{}
@@ -518,6 +519,13 @@ func activationMatchesAck(status *sednav1.RuntimeServiceActivationStatus, ack ac
 		status.ActivatedLocalSequence == ack.LocalSequence
 }
 
+func activationAckPersisted(status *sednav1.RuntimeServiceActivationStatus, ack activation.ActivationAck) bool {
+	if !activationMatchesAck(status, ack) || status.LastAckTime == nil {
+		return false
+	}
+	return ack.ReceivedAt.IsZero() || !status.LastAckTime.Time.Before(ack.ReceivedAt)
+}
+
 func (c *Controller) clearActivationAcks(key string) {
 	c.ackMu.Lock()
 	delete(c.pendingAcks, key)
@@ -528,9 +536,6 @@ func (c *Controller) clearActivationAcks(key string) {
 func (c *Controller) maybeDispatchActivation(service *sednav1.RuntimeService, observation runtimeObservation, status *sednav1.RuntimeServiceStatus) error {
 	if service.Spec.Endpoint == nil || !runtimeConditionTrue(status, sednav1.RuntimeServiceConditionEndpointReady) ||
 		status.Endpoint == nil || status.PodRef == nil || observation.endpoints == nil {
-		return nil
-	}
-	if runtimeConditionTrue(status, sednav1.RuntimeServiceConditionActivated) {
 		return nil
 	}
 	if c.downstreamSend == nil {
@@ -588,6 +593,7 @@ func (c *Controller) updateFromEdge(sourceNode, name, namespace, _ string, conte
 	if sourceNode != ack.TargetNode {
 		return fmt.Errorf("activation ack target node %q does not match websocket source node %q", ack.TargetNode, sourceNode)
 	}
+	ack.ReceivedAt = time.Now()
 	key := namespace + "/" + name
 	c.ackMu.Lock()
 	c.pendingAcks[key] = ack

@@ -54,6 +54,8 @@ type ActivationRequest struct {
 type RouteStatus struct {
 	ServiceUID         types.UID `json:"serviceUID"`
 	RuntimeServiceUID  types.UID `json:"runtimeServiceUID"`
+	FQDN               string    `json:"fqdn"`
+	ServiceIP          string    `json:"serviceIP"`
 	EndpointPodUID     types.UID `json:"endpointPodUID"`
 	DeploymentRevision int64     `json:"deploymentRevision"`
 	RuntimeID          string    `json:"runtimeID"`
@@ -75,4 +77,8 @@ type ActivationAck struct {
 	TargetNode         string    `json:"targetNode"`
 	LocalSequence      uint64    `json:"localSequence"`
 	ObservedAt         time.Time `json:"observedAt"`
+	// ReceivedAt is set by the GM after decoding and is intentionally not part
+	// of the wire format. Lease freshness must use the GM clock rather than a
+	// potentially skewed edge-node timestamp.
+	ReceivedAt time.Time `json:"-"`
 }

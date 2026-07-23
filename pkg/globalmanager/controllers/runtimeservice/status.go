@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"net"
 	"reflect"
+	"time"
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -29,6 +30,8 @@ import (
 
 	sednav1 "github.com/dayu-autostreamer/dayu-sedna/pkg/apis/sedna/v1alpha1"
 )
+
+const activationHealthLease = 90 * time.Second
 
 type runtimeObservation struct {
 	resourcesReconciled bool
@@ -274,13 +277,15 @@ func buildRuntimeStatus(service *sednav1.RuntimeService, specHash string, observ
 	return status
 }
 
-// activationStillApplies makes Activated a one-time rollout barrier rather than
-// a continuous health signal. Cache gaps or readiness loss do not revoke an
-// exact ACK, while an observed Service or Pod replacement does.
+// activationStillApplies treats the node-local route ACK as a renewable health
+// lease. Transient informer gaps do not immediately revoke it, but an identity
+// replacement or an expired ACK does.
 func activationStillApplies(service *sednav1.RuntimeService, observation runtimeObservation, activationStatus *sednav1.RuntimeServiceActivationStatus) bool {
 	if activationStatus == nil || activationStatus.TargetNode != service.Spec.TargetNode ||
 		activationStatus.ActivatedRevision != service.Spec.DeploymentRevision ||
-		activationStatus.ActivatedServiceUID == "" || activationStatus.ActivatedEndpointPodUID == "" {
+		activationStatus.ActivatedServiceUID == "" || activationStatus.ActivatedEndpointPodUID == "" ||
+		activationStatus.LastAckTime == nil ||
+		time.Since(activationStatus.LastAckTime.Time) > activationHealthLease {
 		return false
 	}
 	if observation.service != nil && observation.service.UID != activationStatus.ActivatedServiceUID {

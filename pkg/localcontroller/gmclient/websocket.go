@@ -51,6 +51,10 @@ const (
 	RetryConnectIntervalSeconds = 5
 	// MessageChannelCacheSize is size of channel cache
 	MessageChannelCacheSize = 100
+
+	websocketPingInterval = 15 * time.Second
+	websocketPongWait     = 45 * time.Second
+	websocketWriteWait    = 5 * time.Second
 )
 
 // NewWebSocketClient creates client
@@ -77,12 +81,15 @@ func (c *wsClient) Subscribe(m MessageResourceHandler) error {
 }
 
 // handleReceivedMessage handles received message
-func (c *wsClient) handleReceivedMessage(stop chan struct{}) {
-	defer func() {
-		stop <- struct{}{}
-	}()
+func signalConnectionStop(stop chan<- struct{}) {
+	select {
+	case stop <- struct{}{}:
+	default:
+	}
+}
 
-	ws := c.WSConnection.WSConn
+func (c *wsClient) handleReceivedMessage(ws *websocket.Conn, stop chan<- struct{}) {
+	defer signalConnectionStop(stop)
 
 	for {
 		message := Message{}
@@ -138,24 +145,28 @@ func (c *wsClient) WriteMessage(messageBody interface{}, messageHeader MessageHe
 }
 
 // sendMessage sends the message through the connection
-func (c *wsClient) sendMessage(stop chan struct{}) {
-	defer func() {
-		stop <- struct{}{}
-	}()
-
-	ws := c.WSConnection.WSConn
+func (c *wsClient) sendMessage(ws *websocket.Conn, done <-chan struct{}, stop chan<- struct{}) {
+	defer signalConnectionStop(stop)
 
 	for {
-		message, ok := <-c.SendMessageChannel
-		if !ok {
+		var message Message
+		select {
+		case <-done:
 			return
+		case queued, ok := <-c.SendMessageChannel:
+			if !ok {
+				return
+			}
+			message = queued
 		}
 
 		if err := ws.WriteJSON(&message); err != nil {
 			klog.Errorf("client sent message to global manager(address: %s) failed, error: %v",
 				c.Options.GMAddr, err)
 
-			c.SendMessageChannel <- message
+			// Do not block connection teardown behind a concurrently filled
+			// channel. The next connection will consume the retained message.
+			go func() { c.SendMessageChannel <- message }()
 
 			return
 		}
@@ -164,6 +175,24 @@ func (c *wsClient) sendMessage(stop chan struct{}) {
 			message.Header, c.Options.GMAddr)
 		klog.V(4).Infof("client sent message content: %s to global manager(address: %s)",
 			message.Content, c.Options.GMAddr)
+	}
+}
+
+func (c *wsClient) heartbeat(ws *websocket.Conn, done <-chan struct{}, stop chan<- struct{}) {
+	ticker := time.NewTicker(websocketPingInterval)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-done:
+			return
+		case <-ticker.C:
+			deadline := time.Now().Add(websocketWriteWait)
+			if err := ws.WriteControl(websocket.PingMessage, nil, deadline); err != nil {
+				klog.Warningf("websocket heartbeat to global manager(address: %s) failed: %v", c.Options.GMAddr, err)
+				signalConnectionStop(stop)
+				return
+			}
+		}
 	}
 }
 
@@ -216,12 +245,19 @@ func (c *wsClient) reconnect() {
 			continue
 		}
 		ws := c.WSConnection.WSConn
+		_ = ws.SetReadDeadline(time.Now().Add(websocketPongWait))
+		ws.SetPongHandler(func(string) error {
+			return ws.SetReadDeadline(time.Now().Add(websocketPongWait))
+		})
 
-		stop := make(chan struct{}, 2)
-		go c.handleReceivedMessage(stop)
-		go c.sendMessage(stop)
+		stop := make(chan struct{}, 3)
+		done := make(chan struct{})
+		go c.handleReceivedMessage(ws, stop)
+		go c.sendMessage(ws, done, stop)
+		go c.heartbeat(ws, done, stop)
 		<-stop
 
+		close(done)
 		_ = ws.Close()
 	}
 }
