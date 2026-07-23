@@ -40,18 +40,6 @@ func (function roundTripFunc) RoundTrip(request *http.Request) (*http.Response, 
 	return function(request)
 }
 
-type staticResolver struct {
-	addresses map[string][]string
-	err       error
-}
-
-func (resolver staticResolver) LookupHost(_ context.Context, host string) ([]string, error) {
-	if resolver.err != nil {
-		return nil, resolver.err
-	}
-	return append([]string(nil), resolver.addresses[host]...), nil
-}
-
 func routeHTTPClient(t *testing.T, statusCode int, route func() activation.RouteStatus, inspect func(*http.Request)) *http.Client {
 	t.Helper()
 	return &http.Client{Transport: roundTripFunc(func(request *http.Request) (*http.Response, error) {
@@ -146,12 +134,6 @@ func exactRoute(request activation.ActivationRequest) activation.RouteStatus {
 	}
 }
 
-func installRouteResolver(manager *Manager, route activation.RouteStatus) {
-	manager.resolver = staticResolver{addresses: map[string][]string{
-		route.FQDN: {route.ServiceIP},
-	}}
-}
-
 func activationMessage(t *testing.T, request activation.ActivationRequest, operation string) *clienttypes.Message {
 	t.Helper()
 	content, err := json.Marshal(request)
@@ -192,7 +174,6 @@ func TestManagerAcknowledgesOnlyExactAppliedSyncedRoute(t *testing.T) {
 
 	client := &recordingClient{}
 	manager := New(client, "edge1")
-	installRouteResolver(manager, route)
 	manager.httpClient = httpClient
 	manager.statusBaseURL = "http://edgemesh.local"
 	manager.pollInterval = 5 * time.Millisecond
@@ -392,7 +373,6 @@ func TestManagerDoesNotAckAfterPollerCancellation(t *testing.T) {
 	route.LocalSequence = 1
 	client := &recordingClient{}
 	manager := New(client, "edge1")
-	installRouteResolver(manager, route)
 	manager.pollInterval = 5 * time.Millisecond
 	manager.lease = time.Second
 	manager.httpClient = &http.Client{Transport: roundTripFunc(func(*http.Request) (*http.Response, error) {
@@ -419,24 +399,25 @@ func TestManagerDoesNotAckAfterPollerCancellation(t *testing.T) {
 	}
 }
 
-func TestManagerRequiresDNSResolutionToMatchRouteServiceIP(t *testing.T) {
+func TestManagerRequiresExactEdgeMeshDNSProjectionIdentity(t *testing.T) {
 	request := testActivationRequest()
 	route := exactRoute(request)
 	manager := New(&recordingClient{}, request.TargetNode)
 	manager.httpClient = routeHTTPClient(t, http.StatusOK, func() activation.RouteStatus { return route }, nil)
 	manager.statusBaseURL = "http://edgemesh.local"
-	manager.resolver = staticResolver{addresses: map[string][]string{
-		route.FQDN: {"10.96.0.99"},
-	}}
 
+	route.FQDN = "stale.dayu.svc.cluster.local"
 	if _, ready, err := manager.readRoute(context.Background(), request); err == nil || ready {
-		t.Fatal("route with stale DNS ServiceIP was accepted")
+		t.Fatal("route with stale managed FQDN was accepted")
 	}
-	manager.resolver = staticResolver{addresses: map[string][]string{
-		route.FQDN: {route.ServiceIP},
-	}}
+	route = exactRoute(request)
+	route.ServiceIP = "not-an-ip"
+	if _, ready, err := manager.readRoute(context.Background(), request); err == nil || ready {
+		t.Fatal("route with invalid managed ServiceIP was accepted")
+	}
+	route = exactRoute(request)
 	if _, ready, err := manager.readRoute(context.Background(), request); err != nil || !ready {
-		t.Fatalf("exact route and DNS projection were not accepted: ready=%v err=%v", ready, err)
+		t.Fatalf("exact APPLIED+SYNCED route and DNS projection were not accepted: ready=%v err=%v", ready, err)
 	}
 }
 

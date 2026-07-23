@@ -62,10 +62,6 @@ type activationTombstoneKey struct {
 	runtimeServiceUID string
 }
 
-type hostResolver interface {
-	LookupHost(context.Context, string) ([]string, error)
-}
-
 func (p *activationPoller) renew(now time.Time, lease time.Duration) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
@@ -103,7 +99,6 @@ type Manager struct {
 	NodeName string
 
 	httpClient    *http.Client
-	resolver      hostResolver
 	statusBaseURL string
 	pollInterval  time.Duration
 	lease         time.Duration
@@ -120,7 +115,6 @@ func New(client clienttypes.ClientI, nodeName string) *Manager {
 		Client:        client,
 		NodeName:      nodeName,
 		httpClient:    &http.Client{Timeout: defaultHTTPTimeout},
-		resolver:      net.DefaultResolver,
 		statusBaseURL: defaultEdgeMeshStatusURL,
 		pollInterval:  defaultPollInterval,
 		lease:         defaultActivationLease,
@@ -367,20 +361,15 @@ func (m *Manager) readRoute(ctx context.Context, request activation.ActivationRe
 	}
 
 	expectedFQDN := fmt.Sprintf("%s.%s.svc.cluster.local", request.Name, request.Namespace)
-	serviceIP := net.ParseIP(route.ServiceIP)
-	if route.FQDN != expectedFQDN || serviceIP == nil {
+	if route.FQDN != expectedFQDN || net.ParseIP(route.ServiceIP) == nil {
 		return route, false, fmt.Errorf("EdgeMesh route returned invalid DNS projection fqdn=%q serviceIP=%q", route.FQDN, route.ServiceIP)
 	}
-	addresses, err := m.resolver.LookupHost(ctx, route.FQDN)
-	if err != nil {
-		return route, false, fmt.Errorf("resolve managed route %s: %w", route.FQDN, err)
-	}
-	for _, address := range addresses {
-		if resolved := net.ParseIP(address); resolved != nil && resolved.Equal(serviceIP) {
-			return route, true, nil
-		}
-	}
-	return route, false, fmt.Errorf("managed route %s resolved to %v, want ServiceIP %s", route.FQDN, addresses, route.ServiceIP)
+	// APPLIED+SYNCED is EdgeMesh's atomic data-plane contract: the userspace
+	// portal and managed DNS projection were both published before this status
+	// became visible. The LC runs with hostNetwork and its resolver path is not
+	// the DNS path used by ordinary RuntimeService Pods, so resolving here would
+	// test the wrong network namespace and can reject a healthy route.
+	return route, true, nil
 }
 
 func (m *Manager) sendAck(request activation.ActivationRequest, route activation.RouteStatus) error {
