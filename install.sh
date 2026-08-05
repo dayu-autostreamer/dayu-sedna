@@ -171,7 +171,7 @@ spec:
       serviceAccountName: sedna
       containers:
       - name: kb
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         image: $SEDNA_KB_IMAGE
         env:
           - name: KB_URL
@@ -273,7 +273,7 @@ spec:
       serviceAccountName: sedna
       containers:
       - name: gm
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         image: $SEDNA_GM_IMAGE
         command: ["sedna-gm", "--config", "/config/$config_file_name", "-v2"]
         volumeMounts:
@@ -323,7 +323,7 @@ spec:
     spec:
       containers:
         - name: lc
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           image: $SEDNA_LC_IMAGE
           env:
             - name: GM_ADDRESS
